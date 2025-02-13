@@ -38,6 +38,14 @@ void DeepSeekApiManager::fetchTags(const QString &urlOrContent)
         {"role", "system"},
         {"content", QString("Generate tags for this link: %1").arg(urlOrContent)},
     });
+
+    payload["messages"] = messages;
+    QJsonDocument doc(payload);
+    QByteArray data = doc.toJson();
+
+    currentReply = networkManager->post(request, data);
+    requestTypeMap[currentReply] = FetchTags;
+    connect(currentReply, &QNetworkReply::finished, this, &DeepSeekApiManager::onReplyFinished);
 }
 
 // TODO: IMPLEMENT TO FETCH PAGE CONTENT
