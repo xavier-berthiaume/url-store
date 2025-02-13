@@ -1,13 +1,17 @@
 set(NETWORK_SOURCES
     "api/apimanager.cpp"
     "api/deepseek/deepseekapimanager.cpp"
-    "server.cpp"
+    
+    "server/tcpserver.cpp"
+    "server/abstractserver.cpp"
 )
 
 set(NETWORK_HEADERS
     "api/apimanager.h"
     "api/deepseek/deepseekapimanager.h"
-    "server.h"
+
+    "server/tcpserver.h"
+    "server/abstractserver.h"
 )
 
 target_sources(BusinessLogic PRIVATE
