@@ -1,11 +1,11 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "abstractserver.h"
-
 #include <QTcpServer>
 
-class TcpServer : public AbstractServer, public QTcpServer
+#include "abstractserver.h"
+
+class TcpServer : public QTcpServer, public AbstractServer
 {
     Q_OBJECT
 
@@ -13,8 +13,8 @@ class TcpServer : public AbstractServer, public QTcpServer
 
 public:
     explicit TcpServer(QObject *parent = nullptr);
-    void startServer(quint16 port);
-    void stopServer();
+    void startServer(quint16 port) override;
+    void stopServer() override;
 
 private slots:
     void handleNewConnection();

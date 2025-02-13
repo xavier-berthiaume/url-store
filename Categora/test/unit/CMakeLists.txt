@@ -1,23 +1,30 @@
-# tests/unit/CMakeLists.txt
-# Gather unit test sources
 set(UNIT_TEST_SOURCES
+    "testtcpserver.cpp"
+)
+
+add_executable(test_tcp_server
+    "testtcpserver.cpp"
+)
+
+add_executable(test_deepseek_api_manager
     "deepseekapitests.cpp"
     "mocknetworkreply.h"
     "mocknetworkaccessmanager.h"
 )
 
-# Create an executable for unit tests
-add_executable(unit_tests
-    ${UNIT_TEST_SOURCES}
-)
-
-# Link to Google Test and your business logic
-target_link_libraries(unit_tests PRIVATE
+target_link_libraries(test_tcp_server PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Test
     Qt${QT_VERSION_MAJOR}::Network
     BusinessLogic
 )
 
-# Add the test to CMake's test suite
-add_test(NAME unit_tests COMMAND unit_tests)
+target_link_libraries(test_deepseek_api_manager PRIVATE
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Test
+    Qt${QT_VERSION_MAJOR}::Network
+    BusinessLogic
+)
+
+add_test(NAME test_tcp_server COMMAND test_tcp_server)
+add_test(NAME test_deepseek_api_manager COMMAND test_deepseek_api_manager)

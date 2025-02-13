@@ -5,6 +5,7 @@
 
 TcpServer::TcpServer(QObject *parent)
     : QTcpServer(parent)
+    , AbstractServer()
 {}
 
 void TcpServer::startServer(quint16 port)
