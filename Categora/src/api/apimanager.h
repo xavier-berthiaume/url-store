@@ -23,6 +23,9 @@ public:
     explicit ApiManager(QObject *parent = nullptr);
 
     virtual void setApiKey(const QString &apiKey) = 0;
+    void setNetworkManager(QNetworkAccessManager *manager);
+
+    QString getApiKey() const;
 
     virtual void fetchTags(const QString &url) = 0;
     virtual void fetchPageContent(const QString &url) = 0;
@@ -33,8 +36,6 @@ signals:
     void tagsFetched(const QStringList &tags);
     void pageFetched(const QString &content);
     void errorFetchingData(const QString &error);
-
-
 };
 
 #endif // APIMANAGER_H

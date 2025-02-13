@@ -9,6 +9,7 @@ DeepSeekApiManager::DeepSeekApiManager(QObject *parent)
     : ApiManager{parent}
 {
     networkManager = new QNetworkAccessManager(this);
+    connect(networkManager, &QNetworkAccessManager::finished, this, &DeepSeekApiManager::onReplyFinished);
 }
 
 const QString& DeepSeekApiManager::getBaseUrl() const
@@ -45,7 +46,6 @@ void DeepSeekApiManager::fetchTags(const QString &urlOrContent)
 
     currentReply = networkManager->post(request, data);
     requestTypeMap[currentReply] = FetchTags;
-    connect(currentReply, &QNetworkReply::finished, this, &DeepSeekApiManager::onReplyFinished);
 }
 
 // TODO: IMPLEMENT TO FETCH PAGE CONTENT

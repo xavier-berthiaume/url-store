@@ -10,12 +10,14 @@ class DeepSeekApiManager : public ApiManager
     Q_OBJECT
 
     QNetworkReply *currentReply;
-    const QString& getBaseUrl() const;
 
 public:
     explicit DeepSeekApiManager(QObject *parent = nullptr);
 
+    const QString& getBaseUrl() const;
+
     void setApiKey(const QString &apiKey) override;
+
     void fetchTags(const QString &urlOrContent) override;
     void fetchPageContent(const QString &url) override;
     void cancelRequest() override;
