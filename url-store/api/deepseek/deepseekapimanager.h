@@ -10,6 +10,7 @@ class DeepSeekApiManager : public ApiManager
     Q_OBJECT
 
     QNetworkReply *currentReply;
+    const QString& getBaseUrl() const;
 
 public:
     explicit DeepSeekApiManager(QObject *parent = nullptr);

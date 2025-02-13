@@ -11,19 +11,44 @@ DeepSeekApiManager::DeepSeekApiManager(QObject *parent)
     networkManager = new QNetworkAccessManager(this);
 }
 
-void DeepSeekApiManager::setApiKey(const QString &apiKey) {
+const QString& DeepSeekApiManager::getBaseUrl() const
+{
+    static const QString kBASEURL = "https://api.deepseek.com/chat/completions";
+    return kBASEURL;
+}
+
+void DeepSeekApiManager::setApiKey(const QString &apiKey)
+{
     this->apiKey = apiKey;
 }
 
+void DeepSeekApiManager::fetchTags(const QString &urlOrContent)
+{
+    QUrl apiUrl(getBaseUrl());
+    QNetworkRequest request(apiUrl);
 
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(apiKey).toUtf8());
+
+    QJsonObject payload;
+    payload["model"] = "deepseek-chat";
+
+    QJsonArray messages;
+    messages.append(QJsonObject {
+        {"role", "system"},
+        {"content", QString("Generate tags for this link: %1").arg(urlOrContent)},
+    });
+}
 
 // TODO: IMPLEMENT TO FETCH PAGE CONTENT
-void DeepSeekApiManager::fetchPageContent(const QString &url) {
+void DeepSeekApiManager::fetchPageContent(const QString &url)
+{
     // Implement fetching page content if needed
     Q_UNUSED(url);
 }
 
-void DeepSeekApiManager::cancelRequest() {
+void DeepSeekApiManager::cancelRequest()
+{
     if (currentReply) {
         currentReply->abort();
         currentReply->deleteLater();
