@@ -12,19 +12,25 @@ class MockNetworkAccessManager : public QNetworkAccessManager {
     Q_OBJECT
 
 public:
-    MockNetworkAccessManager(QObject* parent = nullptr) : QNetworkAccessManager(parent) {}
+    MockNetworkAccessManager(QObject* parent = nullptr)
+        : QNetworkAccessManager(parent) {}
 
-    QNetworkReply* post(const QNetworkRequest& request, const QByteArray& data) {
+    QNetworkReply* createRequest(
+        Operation op,
+        const QNetworkRequest& request,
+        QIODevice* outgoingData = nullptr
+        ) override {
+        // Capture the request and data
         lastRequest = request;
-        lastData = data;
+        if (outgoingData) {
+            lastData = outgoingData->readAll(); // Read the outgoing payload
+        }
 
-        // Create a mock reply
-        QNetworkReply* reply = new MockNetworkReply(this);
-        return reply;
+        // Return a mock reply
+        return new MockNetworkReply(this);
     }
 
     QNetworkRequest lastRequest;
     QByteArray lastData;
 };
-
 #endif

@@ -16,6 +16,7 @@ private slots:
     void testFetchTags() {
         // Create the DeepSeekApiManager instance
         DeepSeekApiManager apiManager;
+        apiManager.setApiKey("testapikey");
 
         // Replace the network manager with a mock
         MockNetworkAccessManager* mockNetworkManager = new MockNetworkAccessManager(this);
@@ -27,6 +28,13 @@ private slots:
 
         // Verify the request configuration
         QNetworkRequest request = mockNetworkManager->lastRequest;
+
+        qDebug() << "Request URL:" << request.url().toString();
+        qDebug() << "Headers:" << request.rawHeaderList();
+        qDebug() << "Content-Type:" << request.header(QNetworkRequest::ContentTypeHeader).toString();
+        qDebug() << "Auth Header:" << request.rawHeader("Authorization");
+        qDebug() << "Payload Data:" << mockNetworkManager->lastData;
+
         QCOMPARE(request.url().toString(), apiManager.getBaseUrl());
         QCOMPARE(request.header(QNetworkRequest::ContentTypeHeader).toString(), "application/json");
         QCOMPARE(request.rawHeader("Authorization"), QString("Bearer %1").arg(apiManager.getApiKey()).toUtf8());
