@@ -1,18 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
-
-project(url-store VERSION 0.1 LANGUAGES CXX)
-
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools Network)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools Network)
-
-set(TS_FILES url-store_fr_CA.ts)
+set(TS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/translation/url-store_fr_CA.ts)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -20,23 +6,12 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
-
-        api/apimanager.h
-        api/apimanager.cpp
-
-        db/dbmanager.h
-        db/dbmanager.cpp
-
-        models/url/url.h
-        models/url/url.cpp
-        ${TS_FILES}
 )
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(url-store
+if(QT_VERSION_MAJOR GREATER_EQUAL 6)
+    qt_add_executable(CategoraGUI
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        api/deepseek/deepseekapimanager.h api/deepseek/deepseekapimanager.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET url-store APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -46,13 +21,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 else()
     if(ANDROID)
-        add_library(url-store SHARED
+        add_library(CategoraGUI SHARED
             ${PROJECT_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-        add_executable(url-store
+        add_executable(CategoraGUI
             ${PROJECT_SOURCES}
         )
     endif()
@@ -60,7 +35,8 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(url-store PRIVATE
+target_link_libraries(CategoraGUI PRIVATE
+    BusinessLogic
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Network
 )
@@ -68,24 +44,33 @@ target_link_libraries(url-store PRIVATE
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
-if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.url-store)
+if(APPLE)
+    # Initialize BUNDLE_ID_OPTION as an empty list
+    set(BUNDLE_ID_OPTION)
+
+    # Add MACOSX_BUNDLE_GUI_IDENTIFIER only if QT_VERSION is less than 6.1.0
+    if(QT_VERSION VERSION_LESS 6.1.0)
+        list(APPEND BUNDLE_ID_OPTION
+            MACOSX_BUNDLE_GUI_IDENTIFIER com.example.url-store
+        )
+    endif()
+
+    # Set target properties
+    set_target_properties(url-store PROPERTIES
+        ${BUNDLE_ID_OPTION}
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+        MACOSX_BUNDLE TRUE
+    )
 endif()
-set_target_properties(url-store PROPERTIES
-    ${BUNDLE_ID_OPTION}
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
-    WIN32_EXECUTABLE TRUE
-)
 
 include(GNUInstallDirs)
-install(TARGETS url-store
+install(TARGETS CategoraGUI
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(url-store)
+    qt_finalize_executable(CategoraGUI)
 endif()
