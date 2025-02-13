@@ -16,5 +16,5 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets LinguistTool
 # Include subdirectories
 add_subdirectory(src)
 add_subdirectory(gui)
-# add_subdirectory(cli)
+add_subdirectory(cli)
 add_subdirectory(test)

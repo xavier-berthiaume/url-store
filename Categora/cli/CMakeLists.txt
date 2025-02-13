@@ -1,5 +1,6 @@
 # Gather CLI-specific sources
 set(CLI_SOURCES
+    main.cpp
 )
 
 set(CLI_HEADERS

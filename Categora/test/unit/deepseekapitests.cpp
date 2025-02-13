@@ -1,4 +1,4 @@
-#include "../../src/api/deepseek/deepseekapimanager.h"
+#include "../../src/network/api/deepseek/deepseekapimanager.h"
 
 #include "mocknetworkaccessmanager.h"
 
