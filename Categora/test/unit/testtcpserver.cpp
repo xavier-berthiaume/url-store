@@ -68,11 +68,6 @@ private:
     quint16 serverPort = 12345;
 
     QString sendRequest(const QString &request) {
-        if (clientSocket->state() != QTcpSocket::ConnectedState) {
-            qDebug() << "Client socket not connected to host, connecting...";
-            clientSocket->connectToHost(QHostAddress::LocalHost, serverPort);
-        }
-
         qDebug() << "Client socket currently connected, sending request " << request;
 
         clientSocket->write(request.toUtf8() + "\n");

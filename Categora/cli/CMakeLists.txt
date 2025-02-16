@@ -16,6 +16,7 @@ add_executable(CategoraCLI
 target_link_libraries(CategoraCLI PRIVATE
     BusinessLogic
     Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Network
 )
 
 # Enable automoc if CLI uses Qt signals/slots

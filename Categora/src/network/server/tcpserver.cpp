@@ -7,8 +7,9 @@ TcpServer::TcpServer(QObject *parent)
     : QTcpServer(parent)
     , AbstractServer()
 {
-    bool isConnected = connect(this, &QTcpServer::newConnection, this, &TcpServer::handleNewConnection);
-    qDebug() << "Connecting TcpServer new connection handler:" << isConnected;}
+    qDebug() << "Connecting TcpServer new connection handler:"
+             << connect(this, &QTcpServer::newConnection, this, &TcpServer::handleNewConnection);
+}
 
 void TcpServer::startServer(quint16 port)
 {
@@ -29,8 +30,7 @@ void TcpServer::stopServer() {
 void TcpServer::handleNewConnection()
 {
     QTcpSocket *socket = nextPendingConnection();
-    if (!socket) return;
-    activeSockets.append(socket);
+    // activeSockets.append(socket);
 
     connect(socket, &QTcpSocket::readyRead, this, &TcpServer::handleReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &TcpServer::handleDisconnected);
@@ -43,7 +43,6 @@ void TcpServer::handleReadyRead()
     if (!socket) return;
 
     QString request = QString::fromUtf8(socket->readAll()).trimmed();
-    qDebug() << "Request received: " << request;
 
     handleRequest(request, [socket](const QString &response) {
         qDebug() << "Sending response: " << response;
