@@ -1,6 +1,6 @@
 # Create a static/shared library for business logic
 add_library(BusinessLogic STATIC
-    models/token/token.h models/token/token.cpp)
+    models/token/qttokenwrapper.h models/token/qttokenwrapper.cpp)
 
 target_link_libraries(BusinessLogic PRIVATE 
     Qt${QT_VERSION_MAJOR}::Core

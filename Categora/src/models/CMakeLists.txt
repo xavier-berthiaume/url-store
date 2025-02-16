@@ -1,11 +1,15 @@
 set(MODEL_SOURCES
     "url/url.cpp"
+    "url/qturlwrapper.cpp"
     "token/token.cpp"
+    "token/qttokenwrapper.cpp"
 )
 
 set(MODEL_HEADERS
     "url/url.h"
+    "url/qturlwrapper.h"
     "token/token.h"
+    "token/qttokenwrapper.h"
 )
 
 target_sources(BusinessLogic PRIVATE

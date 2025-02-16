@@ -72,7 +72,8 @@ bool SqliteDbManager::createTokenTable()
     QSqlQuery query;
     QString createTableQuery = "CREATE TABLE IF NOT EXISTS tokens ("
                                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                               "token TEXT)";
+                               "token TEXT NOT NULL"
+                               "creationDate INTEGER NOT NULL)";
     if (!query.exec(createTableQuery)) {
         qWarning() << "Error: Could not create token table -" << query.lastError();
         return false;
