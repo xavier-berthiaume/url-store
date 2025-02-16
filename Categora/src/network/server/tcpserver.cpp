@@ -6,7 +6,9 @@
 TcpServer::TcpServer(QObject *parent)
     : QTcpServer(parent)
     , AbstractServer()
-{}
+{
+    bool isConnected = connect(this, &QTcpServer::newConnection, this, &TcpServer::handleNewConnection);
+    qDebug() << "Connecting TcpServer new connection handler:" << isConnected;}
 
 void TcpServer::startServer(quint16 port)
 {
@@ -14,6 +16,7 @@ void TcpServer::startServer(quint16 port)
         qCritical() << "Failed to start server on port" << port;
         exit(1);
     }
+
     qDebug() << "Server listening on port" << port;
 }
 
@@ -25,24 +28,35 @@ void TcpServer::stopServer() {
 
 void TcpServer::handleNewConnection()
 {
-    socket = nextPendingConnection();
+    QTcpSocket *socket = nextPendingConnection();
+    if (!socket) return;
+    activeSockets.append(socket);
+
     connect(socket, &QTcpSocket::readyRead, this, &TcpServer::handleReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &TcpServer::handleDisconnected);
+    qDebug() << "New client connected: " << socket->peerAddress().toString();
 }
 
 void TcpServer::handleReadyRead()
 {
-    socket = qobject_cast<QTcpSocket*>(sender());
+    QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
     if (!socket) return;
 
     QString request = QString::fromUtf8(socket->readAll()).trimmed();
-    handleRequest(request, [this](const QString &response) {
+    qDebug() << "Request received: " << request;
+
+    handleRequest(request, [socket](const QString &response) {
+        qDebug() << "Sending response: " << response;
         socket->write(response.toUtf8());
+        socket->flush();
     });
 }
 
 void TcpServer::handleDisconnected()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
-    if (socket) socket->deleteLater();
+    if (socket) {
+        activeSockets.removeOne(socket);
+        socket->deleteLater();
+    }
 }

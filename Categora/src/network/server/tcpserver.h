@@ -1,5 +1,5 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef TCPSERVER_H
+#define TCPSERVER_H
 
 #include <QTcpServer>
 
@@ -9,7 +9,7 @@ class TcpServer : public QTcpServer, public AbstractServer
 {
     Q_OBJECT
 
-    QTcpSocket *socket;
+    QList<QTcpSocket*> activeSockets;
 
 public:
     explicit TcpServer(QObject *parent = nullptr);
@@ -23,4 +23,4 @@ private slots:
 
 };
 
-#endif // SERVER_H
+#endif

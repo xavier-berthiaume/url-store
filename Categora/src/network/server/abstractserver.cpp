@@ -1,6 +1,7 @@
 #include "abstractserver.h"
 
 #include <QUuid>
+#include <QDebug>
 
 AbstractServer::AbstractServer()
 {}
@@ -14,6 +15,7 @@ bool AbstractServer::isValidToken(const QString &token) {
 }
 
 void AbstractServer::handleRequest(const QString &request, std::function<void(const QString &)> sendResponse) {
+    qDebug() << "Request received: " << request;
     QStringList parts = request.split(" ");
     if (parts.isEmpty()) {
         sendResponse("ERROR: Invalid request.\n");

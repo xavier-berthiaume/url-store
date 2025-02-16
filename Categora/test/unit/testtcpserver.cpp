@@ -31,22 +31,26 @@ private slots:
     void testAuthentication() {
         // Send AUTH request
         QString response = sendRequest("AUTH");
+        qDebug() << "Response: " << response;
         QVERIFY(response.startsWith("TOKEN ")); // Check if response starts with "TOKEN "
     }
 
     void testPostRequest() {
         // First, get a token
         QString tokenResponse = sendRequest("AUTH");
+        qDebug() << "Response: " << tokenResponse;
         QString token = tokenResponse.split(" ").last();
 
         // Send POST request with the token
         QString postResponse = sendRequest("POST " + token + " https://example.com");
+        qDebug() << "Response: " << postResponse;
         QCOMPARE(postResponse, QString("OK: URL stored.\n")); // Check if URL is stored
     }
 
     void testGetRequest() {
         // First, get a token
         QString tokenResponse = sendRequest("AUTH");
+        qDebug() << "Response: " << tokenResponse;
         QString token = tokenResponse.split(" ").last();
 
         // Send POST request to store a URL
@@ -54,6 +58,7 @@ private slots:
 
         // Send GET request to retrieve the URL
         QString getResponse = sendRequest("GET " + token);
+        qDebug() << "Response: " << getResponse;
         QVERIFY(getResponse.contains("https://example.com")); // Check if URL is retrieved
     }
 
@@ -63,7 +68,14 @@ private:
     quint16 serverPort = 12345;
 
     QString sendRequest(const QString &request) {
-        clientSocket->write(request.toUtf8());
+        if (clientSocket->state() != QTcpSocket::ConnectedState) {
+            qDebug() << "Client socket not connected to host, connecting...";
+            clientSocket->connectToHost(QHostAddress::LocalHost, serverPort);
+        }
+
+        qDebug() << "Client socket currently connected, sending request " << request;
+
+        clientSocket->write(request.toUtf8() + "\n");
         clientSocket->waitForBytesWritten(5000);
         clientSocket->waitForReadyRead(5000);
         return QString::fromUtf8(clientSocket->readAll()).trimmed();
