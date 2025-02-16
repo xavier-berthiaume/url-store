@@ -1,12 +1,12 @@
 #include <QCoreApplication>
-#include <QCommandLineParser>
-#include <QCommandLineOption>
-#include <QDebug>
+
+#include "../src/network/server/tcpserver.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
+    /*
     // Set application metadata
     QCoreApplication::setApplicationName("MyCLIApp");
     QCoreApplication::setApplicationVersion("1.0");
@@ -31,6 +31,11 @@ int main(int argc, char *argv[])
     } else {
         qDebug() << "Hello, World!";
     }
+
+    */
+
+    TcpServer server = TcpServer();
+    server.startServer(12345);
 
     return app.exec();
 }
