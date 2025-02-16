@@ -1,9 +1,11 @@
 set(MODEL_SOURCES
     "url/url.cpp"
+    "token/token.cpp"
 )
 
 set(MODEL_HEADERS
     "url/url.h"
+    "token/token.h"
 )
 
 target_sources(BusinessLogic PRIVATE

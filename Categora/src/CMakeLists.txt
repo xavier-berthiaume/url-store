@@ -1,9 +1,11 @@
 # Create a static/shared library for business logic
-add_library(BusinessLogic STATIC)
+add_library(BusinessLogic STATIC
+    models/token/token.h models/token/token.cpp)
 
 target_link_libraries(BusinessLogic PRIVATE 
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Network
+    Qt${QT_VERSION_MAJOR}::Sql
 )
 
 target_include_directories(BusinessLogic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

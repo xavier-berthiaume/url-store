@@ -1,9 +1,11 @@
 set(DB_SOURCES
-    "dbmanager.cpp"
+    "abstractdbmanager.cpp"
+    "sqlitedbmanager.cpp"
 )
 
 set(DB_HEADERS
-    "dbmanager.h"
+    "abstractdbmanager.h"
+    "sqlitedbmanager.h"
 )
 
 target_sources(BusinessLogic PRIVATE
