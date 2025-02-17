@@ -20,12 +20,12 @@ public:
     bool init() override;
 
     bool saveToken(const Token &token) override;
-    bool readToken(quint32 id, std::unique_ptr<Token> &token) override;
+    bool readToken(quint32 id, std::shared_ptr<Token> &token) override;
     bool updateToken(quint32 id, const Token &token) override;
     bool deleteToken(quint32 id) override;
 
     bool saveUrl(const Url &url) override;
-    bool readUrl(quint32 id, std::unique_ptr<Url> &url) override;
+    bool readUrl(quint32 id, std::shared_ptr<Url> &url) override;
     bool updateUrl(quint32 id, const Url &url) override;
     bool deleteUrl(quint32 id) override;
 

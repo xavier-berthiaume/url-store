@@ -34,8 +34,11 @@ target_link_libraries(test_sqlite_db_manager PRIVATE
     BusinessLogic
 )
 
+add_test(NAME test_tcp_server COMMAND test_tcp_server)
+add_test(NAME test_deepseek_api_manager COMMAND test_deepseek_api_manager)
+add_test(NAME test_sqlite_db_manager COMMAND test_sqlite_db_manager)
+
 # The following test doesn't work with the way that Qt
 # generates and executes the test. I'm really not sure why
 # that is, but perhaps when I know more I'll fix it.
 # add_test(NAME test_tcp_server COMMAND test_tcp_server)
-add_test(NAME test_deepseek_api_manager COMMAND test_deepseek_api_manager)

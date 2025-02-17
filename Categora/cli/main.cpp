@@ -1,6 +1,8 @@
 #include <QCoreApplication>
 
-#include "../src/network/server/tcpserver.h"
+#include "../src/db/sqlitedbmanager.h"
+#include "../src/models/token/token.h"
+#include "../src/models/url/url.h"
 
 int main(int argc, char *argv[])
 {
@@ -33,8 +35,16 @@ int main(int argc, char *argv[])
     }
     */
 
-    TcpServer server = TcpServer();
-    server.startServer(12345);
+    Token token = Token("This is a token ;)", 123123123);
+
+    SqliteDbManager manager = SqliteDbManager("");
+    manager.init();
+    manager.saveToken(token);
+
+    std::shared_ptr<Token> token2;
+    manager.readToken(1, token2);
+    qDebug() << QString::fromStdString(token2->getTokenString());
+    manager.close();
 
     return app.exec();
 }

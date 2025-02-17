@@ -30,13 +30,13 @@ void TestDatabaseManager::cleanup()
 // Helper function implementations
 bool TestDatabaseManager::tokenExistsInDatabase(quint32 id)
 {
-    std::unique_ptr<Token> token;
+    std::shared_ptr<Token> token;
     return dbManager->readToken(id, token) && token != nullptr;
 }
 
 bool TestDatabaseManager::urlExistsInDatabase(quint32 id)
 {
-    std::unique_ptr<Url> url;
+    std::shared_ptr<Url> url;
     return dbManager->readUrl(id, url) && url != nullptr;
 }
 
@@ -61,7 +61,7 @@ void TestDatabaseManager::testReadToken()
     dbManager->saveToken(Token(originalToken, originalDate));
 
     // Test read
-    std::unique_ptr<Token> readToken;
+    std::shared_ptr<Token> readToken;
     QVERIFY(dbManager->readToken(testId, readToken));
     QVERIFY(readToken != nullptr);
     QCOMPARE(readToken->getTokenString(), originalToken);
@@ -81,7 +81,7 @@ void TestDatabaseManager::testUpdateToken()
     QVERIFY(dbManager->updateToken(testId, newToken));
 
     // Verify update
-    std::unique_ptr<Token> readToken;
+    std::shared_ptr<Token> readToken;
     QVERIFY(dbManager->readToken(testId, readToken));
     QCOMPARE(readToken->getTokenString(), updatedToken);
     QCOMPARE(readToken->getCreationDate(), updatedDate);
@@ -121,7 +121,7 @@ void TestDatabaseManager::testReadUrl()
     dbManager->saveUrl(url);
 
     // Test read
-    std::unique_ptr<Url> readUrl;
+    std::shared_ptr<Url> readUrl;
     QVERIFY(dbManager->readUrl(testId, readUrl));
     QVERIFY(readUrl != nullptr);
     QCOMPARE(readUrl->getUrl(), originalUrl);
@@ -145,7 +145,7 @@ void TestDatabaseManager::testUpdateUrl()
     QVERIFY(dbManager->updateUrl(testId, updated));
 
     // Verify update
-    std::unique_ptr<Url> readUrl;
+    std::shared_ptr<Url> readUrl;
     QVERIFY(dbManager->readUrl(testId, readUrl));
     QCOMPARE(readUrl->getUrl(), updated.getUrl());
     QCOMPARE(readUrl->getNote(), updated.getNote());
@@ -170,7 +170,7 @@ void TestDatabaseManager::testUrlTags()
 
     QVERIFY(dbManager->saveUrl(url));
 
-    std::unique_ptr<Url> readUrl;
+    std::shared_ptr<Url> readUrl;
     QVERIFY(dbManager->readUrl(testId, readUrl));
     QCOMPARE(readUrl->getTags().size(), tags.size());
     QVERIFY(readUrl->getTags() == tags);
@@ -189,4 +189,4 @@ void TestDatabaseManager::testTransactionRollback()
 }
 
 QTEST_MAIN(TestDatabaseManager)
-#include "TestDatabaseManager.moc"
+#include "testsqlitedatabasemanager.moc"

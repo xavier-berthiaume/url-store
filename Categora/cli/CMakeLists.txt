@@ -17,6 +17,7 @@ target_link_libraries(CategoraCLI PRIVATE
     BusinessLogic
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Network
+    Qt${QT_VERSION_MAJOR}::Sql
 )
 
 # Enable automoc if CLI uses Qt signals/slots

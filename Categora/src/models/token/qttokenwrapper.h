@@ -9,7 +9,7 @@
 class QtTokenWrapper : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString m_token READ token CONSTANT)
+    Q_PROPERTY(QString m_token READ tokenString CONSTANT)
     Q_PROPERTY(QDateTime m_creation_date READ creationDate CONSTANT)
 
     Token m_token;

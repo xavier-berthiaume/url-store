@@ -46,7 +46,7 @@ bool SqliteDbManager::saveToken(const Token &token)
     return true;
 }
 
-bool SqliteDbManager::readToken(quint32 id, std::unique_ptr<Token> &token)
+bool SqliteDbManager::readToken(quint32 id, std::shared_ptr<Token> &token)
 {
     QSqlQuery query;
     query.prepare("SELECT token, creationDate FROM tokens WHERE id = :id");
@@ -58,7 +58,7 @@ bool SqliteDbManager::readToken(quint32 id, std::unique_ptr<Token> &token)
         return false;
     }
 
-    token = std::make_unique<Token>(
+    token = std::make_shared<Token>(
         query.value(0).toString().toStdString(),
         query.value(1).toLongLong()
         );
@@ -138,7 +138,7 @@ bool SqliteDbManager::saveUrl(const Url &url) {
     }
 }
 
-bool SqliteDbManager::readUrl(quint32 id, std::unique_ptr<Url> &url) {
+bool SqliteDbManager::readUrl(quint32 id, std::shared_ptr<Url> &url) {
     QSqlQuery query;
     query.prepare(
         "SELECT url, note, createdDate FROM urls "
@@ -172,7 +172,7 @@ bool SqliteDbManager::readUrl(quint32 id, std::unique_ptr<Url> &url) {
     }
 
     // Create URL object
-    url = std::make_unique<Url>(urlStr);
+    url = std::make_shared<Url>(urlStr);
     url->setNote(note);
     url->setTags(tags);
 
