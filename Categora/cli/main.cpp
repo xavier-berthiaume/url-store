@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
     } else {
         qDebug() << "Hello, World!";
     }
-
     */
 
     TcpServer server = TcpServer();

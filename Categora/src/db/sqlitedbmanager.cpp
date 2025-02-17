@@ -97,7 +97,7 @@ bool SqliteDbManager::deleteToken(quint32 id)
 }
 
 bool SqliteDbManager::saveUrl(const Url &url) {
-    QSqlDatabase::database().transaction();
+    QSqlDatabase::database().transaction(); // Start transaction
 
     try {
         // Insert main URL data
@@ -130,7 +130,8 @@ bool SqliteDbManager::saveUrl(const Url &url) {
 
         QSqlDatabase::database().commit();
         return true;
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e) {
         QSqlDatabase::database().rollback();
         qWarning() << "Save URL failed:" << e.what();
         return false;

@@ -1,4 +1,5 @@
 #include "qturlwrapper.h"
+
 #include <QDebug>
 #include <QVariant>
 
@@ -17,8 +18,15 @@ Url QtUrlWrapper::coreUrl() const {
 
 void QtUrlWrapper::setCoreUrl(const Url& url) {
     m_url = url;
+    std::vector<std::string> tags = m_url.getTags();
+    QStringList tag_list;
+
+    for (const auto &tag : tags) {
+        tag_list << QString::fromStdString(tag);
+    }
+
     emit urlChanged(QString::fromStdString(m_url.getUrl()));
-    emit tagsChanged(QStringList::fromVector(QVector<QString>(m_url.getTags().begin(), m_url.getTags().end())));
+    emit tagsChanged(tag_list);
     emit noteChanged(QString::fromStdString(m_url.getNote()));
 }
 

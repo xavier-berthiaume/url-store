@@ -1,7 +1,3 @@
-set(UNIT_TEST_SOURCES
-    "testtcpserver.cpp"
-)
-
 add_executable(test_tcp_server
     "testtcpserver.cpp"
 )
@@ -10,6 +6,11 @@ add_executable(test_deepseek_api_manager
     "deepseekapitests.cpp"
     "mocknetworkreply.h"
     "mocknetworkaccessmanager.h"
+)
+
+add_executable(test_sqlite_db_manager
+    "testsqlitedatabasemanager.cpp"
+    "testsqlitedatabasemanager.h"
 )
 
 target_link_libraries(test_tcp_server PRIVATE
@@ -23,6 +24,13 @@ target_link_libraries(test_deepseek_api_manager PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Test
     Qt${QT_VERSION_MAJOR}::Network
+    BusinessLogic
+)
+
+target_link_libraries(test_sqlite_db_manager PRIVATE
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Test
+    Qt${QT_VERSION_MAJOR}::Sql
     BusinessLogic
 )
 
