@@ -16,13 +16,13 @@ public:
     virtual bool init() = 0;
 
     virtual bool saveToken(const Token &token) = 0;
-    virtual bool readToken(Token &token, quint32 id) = 0;
-    virtual bool updateToken(const Token &token) = 0;
-    virtual bool deleteToken(quint32 &id) = 0;
+    virtual bool readToken(quint32 id, std::unique_ptr<Token> &token) = 0;
+    virtual bool updateToken(quint32 id, const Token &token) = 0;
+    virtual bool deleteToken(quint32 id) = 0;
 
     virtual bool saveUrl(const Url &url) = 0;
-    virtual bool readUrl(Url &url, quint32 id) = 0;
-    virtual bool updateUrl(const Url &url) = 0;
+    virtual bool readUrl(quint32 id, std::unique_ptr<Url> &url) = 0;
+    virtual bool updateUrl(quint32 id, const Url &url) = 0;
     virtual bool deleteUrl(quint32 id) = 0;
 
     virtual void close() = 0;
