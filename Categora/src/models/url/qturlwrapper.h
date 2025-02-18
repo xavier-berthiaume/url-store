@@ -35,6 +35,7 @@ public:
 
     bool operator==(const QtUrlWrapper &other) const;
     bool operator!=(const QtUrlWrapper &other) const;
+    // TODO: Review the next function for string output of objects
     friend QDebug operator<<(QDebug debug, const QtUrlWrapper &url);
 
 public slots:

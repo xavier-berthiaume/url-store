@@ -62,10 +62,20 @@ bool QtTokenWrapper::operator!=(const QtTokenWrapper &other) const
     return !(*this == other);
 }
 
+QtTokenWrapper::operator QString() const
+{
+    return QString("Token: %1\nCreation Date: %2").arg(tokenString(), creationDate().toString());
+}
+
 QDebug operator<<(QDebug debug, const QtTokenWrapper &token)
 {
-    debug.nospace() << "Token: " << token.tokenString()
-                    << "\nCreation Date" << token.creationDate();
+    // Use QDebugStateSaver to preserve stream settings
+    QDebugStateSaver saver(debug);
+
+    debug.nospace() << "Token: "
+                    << token.tokenString()
+                    << "\nCreation Date: "
+                    << token.creationDate().toString(Qt::ISODate);
 
     return debug;
 }

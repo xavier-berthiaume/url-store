@@ -31,6 +31,8 @@ public:
 
     bool operator==(const QtTokenWrapper &other) const;
     bool operator!=(const QtTokenWrapper &other) const;
+    // TODO: Review the next two functions for string output of objects
+    operator QString() const;
     friend QDebug operator<<(QDebug debug, const QtTokenWrapper &token);
 };
 

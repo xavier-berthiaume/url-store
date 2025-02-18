@@ -50,7 +50,8 @@ int main(int argc, char *argv[])
     qDebug() << "Is token read successful: " << manager.readToken(1, readToken);
     qDebug() << "Is url read successful: " << manager.readUrl(1, readUrl);
 
-    qDebug() << "This is the read token\n" << readToken;
+    qDebug() << "This is the original token\n" << token.tokenString() << " - " << token.creationDate();
+    qDebug() << "This is the read token\n" << readToken->tokenString() << " - " << readToken->creationDate();
     qDebug() << "This is the read url\n" << readUrl;
 
     qDebug() << "Read token matches initial token: " << (*readToken == token);

@@ -59,7 +59,7 @@ bool SqliteDbManager::readToken(quint32 id, QtTokenWrapper *&token)
 
     token = new QtTokenWrapper(
         query.value(0).toString(),
-        query.value(1).toDateTime(),
+        QDateTime(QDateTime::fromSecsSinceEpoch(query.value(1).toLongLong())),
         this
     );
 
