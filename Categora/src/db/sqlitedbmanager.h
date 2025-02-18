@@ -19,14 +19,14 @@ public:
 
     bool init() override;
 
-    bool saveToken(const Token &token) override;
-    bool readToken(quint32 id, std::shared_ptr<Token> &token) override;
-    bool updateToken(quint32 id, const Token &token) override;
+    bool saveToken(const QtTokenWrapper &token) override;
+    bool readToken(quint32 id, QtTokenWrapper *token) override;
+    bool updateToken(quint32 id, const QtTokenWrapper &token) override;
     bool deleteToken(quint32 id) override;
 
-    bool saveUrl(const Url &url) override;
-    bool readUrl(quint32 id, std::shared_ptr<Url> &url) override;
-    bool updateUrl(quint32 id, const Url &url) override;
+    bool saveUrl(const QtUrlWrapper &url) override;
+    bool readUrl(quint32 id, QtUrlWrapper *url) override;
+    bool updateUrl(quint32 id, const QtUrlWrapper &url) override;
     bool deleteUrl(quint32 id) override;
 
     void close() override;

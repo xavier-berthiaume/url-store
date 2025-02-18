@@ -9,8 +9,8 @@
 class QtTokenWrapper : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString m_token READ tokenString CONSTANT)
-    Q_PROPERTY(QDateTime m_creation_date READ creationDate CONSTANT)
+    Q_PROPERTY(QString tokenString READ tokenString CONSTANT)
+    Q_PROPERTY(QDateTime creationDate READ creationDate CONSTANT)
 
     Token m_token;
 
@@ -29,6 +29,9 @@ public:
     QString tokenString() const;
     QDateTime creationDate() const;
 
+    bool operator==(const QtTokenWrapper &other) const;
+    bool operator!=(const QtTokenWrapper &other) const;
+    friend QDebug operator<<(QDebug debug, const QtTokenWrapper &token);
 };
 
 #endif // QTTOKENWRAPPER_H

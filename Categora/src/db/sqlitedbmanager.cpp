@@ -28,15 +28,15 @@ bool SqliteDbManager::init()
     return true;
 }
 
-bool SqliteDbManager::saveToken(const Token &token)
+bool SqliteDbManager::saveToken(const QtTokenWrapper &token)
 {
     QSqlQuery query;
     query.prepare(
         "INSERT INTO tokens (token, creationDate) "
         "VALUES (:token, :date)"
         );
-    query.bindValue(":token", QString::fromStdString(token.getTokenString()));
-    query.bindValue(":date", static_cast<qint64>(token.getCreationDate()));
+    query.bindValue(":token", token.tokenString());
+    query.bindValue(":date", token.creationDate().toSecsSinceEpoch());
 
     if (!query.exec()) {
         qWarning() << "Error saving token:" << query.lastError();
@@ -46,7 +46,7 @@ bool SqliteDbManager::saveToken(const Token &token)
     return true;
 }
 
-bool SqliteDbManager::readToken(quint32 id, std::shared_ptr<Token> &token)
+bool SqliteDbManager::readToken(quint32 id, QtTokenWrapper *token)
 {
     QSqlQuery query;
     query.prepare("SELECT token, creationDate FROM tokens WHERE id = :id");
@@ -54,24 +54,24 @@ bool SqliteDbManager::readToken(quint32 id, std::shared_ptr<Token> &token)
 
     if (!query.exec() || !query.next()) {
         qWarning() << "Error reading token:" << query.lastError();
-        token.reset();
         return false;
     }
 
-    token = std::make_shared<Token>(
-        query.value(0).toString().toStdString(),
-        query.value(1).toLongLong()
-        );
+    token = new QtTokenWrapper(
+        query.value(0).toString(),
+        query.value(1).toDateTime(),
+        this
+    );
 
     return true;
 }
 
-bool SqliteDbManager::updateToken(quint32 id, const Token &token)
+bool SqliteDbManager::updateToken(quint32 id, const QtTokenWrapper &token)
 {
     QSqlQuery query;
     query.prepare("UPDATE tokens SET token=:tokenStr, creationDate=:creationDate WHERE id=:id");
-    query.bindValue(":tokenStr", QString::fromStdString(token.getTokenString()));
-    query.bindValue(":creationDate", static_cast<qint64>(token.getCreationDate()));
+    query.bindValue(":tokenStr", token.tokenString());
+    query.bindValue(":creationDate", token.creationDate());
     query.bindValue(":id", id);
 
     if (!query.exec()) {
@@ -96,7 +96,7 @@ bool SqliteDbManager::deleteToken(quint32 id)
     return true;
 }
 
-bool SqliteDbManager::saveUrl(const Url &url) {
+bool SqliteDbManager::saveUrl(const QtUrlWrapper &url) {
     QSqlDatabase::database().transaction(); // Start transaction
 
     try {
@@ -106,8 +106,8 @@ bool SqliteDbManager::saveUrl(const Url &url) {
             "INSERT INTO urls (url, note, createdDate) "
             "VALUES (:url, :note, :date)"
             );
-        query.bindValue(":url", QString::fromStdString(url.getUrl()));
-        query.bindValue(":note", QString::fromStdString(url.getNote()));
+        query.bindValue(":url", url.url());
+        query.bindValue(":note", url.note());
         query.bindValue(":date", QDateTime::currentSecsSinceEpoch());
 
         if (!query.exec()) throw std::runtime_error("URL insert failed");
@@ -116,14 +116,14 @@ bool SqliteDbManager::saveUrl(const Url &url) {
         const quint64 urlId = query.lastInsertId().toULongLong();
 
         // Insert tags
-        for (const auto& tag : url.getTags()) {
+        for (const auto& tag : url.tags()) {
             QSqlQuery tagQuery;
             tagQuery.prepare(
                 "INSERT OR IGNORE INTO url_tags (url_id, tag) "
                 "VALUES (:id, :tag)"
                 );
             tagQuery.bindValue(":id", urlId);
-            tagQuery.bindValue(":tag", QString::fromStdString(tag));
+            tagQuery.bindValue(":tag", tag);
 
             if (!tagQuery.exec()) throw std::runtime_error("Tag insert failed");
         }
@@ -138,7 +138,7 @@ bool SqliteDbManager::saveUrl(const Url &url) {
     }
 }
 
-bool SqliteDbManager::readUrl(quint32 id, std::shared_ptr<Url> &url) {
+bool SqliteDbManager::readUrl(quint32 id, QtUrlWrapper *url) {
     QSqlQuery query;
     query.prepare(
         "SELECT url, note, createdDate FROM urls "
@@ -148,13 +148,12 @@ bool SqliteDbManager::readUrl(quint32 id, std::shared_ptr<Url> &url) {
 
     if (!query.exec() || !query.next()) {
         qWarning() << "URL read error:" << query.lastError();
-        url.reset();
         return false;
     }
 
     // Get main URL data
-    std::string urlStr = query.value(0).toString().toStdString();
-    std::string note = query.value(1).toString().toStdString();
+    QString urlStr = query.value(0).toString();
+    QString note = query.value(1).toString();
 
     // Get tags
     QSqlQuery tagQuery;
@@ -164,22 +163,22 @@ bool SqliteDbManager::readUrl(quint32 id, std::shared_ptr<Url> &url) {
         );
     tagQuery.bindValue(":id", id);
 
-    std::vector<std::string> tags;
+    QStringList tags;
     if (tagQuery.exec()) {
         while (tagQuery.next()) {
-            tags.push_back(tagQuery.value(0).toString().toStdString());
+            tags << tagQuery.value(0).toString();
         }
     }
 
     // Create URL object
-    url = std::make_shared<Url>(urlStr);
+    url = new QtUrlWrapper(urlStr, tags, note, this);
     url->setNote(note);
     url->setTags(tags);
 
     return true;
 }
 
-bool SqliteDbManager::updateUrl(quint32 id, const Url &url) {
+bool SqliteDbManager::updateUrl(quint32 id, const QtUrlWrapper &url) {
     QSqlDatabase::database().transaction();
 
     try {
@@ -190,8 +189,8 @@ bool SqliteDbManager::updateUrl(quint32 id, const Url &url) {
             "url = :new_url, note = :new_note "
             "WHERE id = :id"
             );
-        query.bindValue(":new_url", QString::fromStdString(url.getUrl()));
-        query.bindValue(":new_note", QString::fromStdString(url.getNote()));
+        query.bindValue(":new_url", url.url());
+        query.bindValue(":new_note", url.note());
         query.bindValue(":id", id);
 
         if (!query.exec()) throw std::runtime_error("URL update failed");
@@ -203,14 +202,14 @@ bool SqliteDbManager::updateUrl(quint32 id, const Url &url) {
         if (!deleteQuery.exec()) throw std::runtime_error("Tag delete failed");
 
         // Insert new tags
-        for (const auto& tag : url.getTags()) {
+        for (const auto& tag : url.tags()) {
             QSqlQuery insertQuery;
             insertQuery.prepare(
                 "INSERT OR IGNORE INTO url_tags (url_id, tag) "
                 "VALUES (:id, :tag)"
                 );
             insertQuery.bindValue(":id", id);
-            insertQuery.bindValue(":tag", QString::fromStdString(tag));
+            insertQuery.bindValue(":tag", tag);
 
             if (!insertQuery.exec()) throw std::runtime_error("Tag insert failed");
         }

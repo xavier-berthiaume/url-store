@@ -5,8 +5,15 @@ Url::Url()
 
 }
 
-Url::Url(const std::string &url)
+Url::Url(const std::string &url) : url(url)
+{
+
+}
+
+Url::Url(const std::string &url, const std::vector<std::string> &tags, const std::string &note)
     : url(url)
+    , tags(tags)
+    , note(note)
 {
 
 }

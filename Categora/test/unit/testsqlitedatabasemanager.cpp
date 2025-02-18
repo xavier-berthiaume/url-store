@@ -30,13 +30,13 @@ void TestDatabaseManager::cleanup()
 // Helper function implementations
 bool TestDatabaseManager::tokenExistsInDatabase(quint32 id)
 {
-    std::shared_ptr<Token> token;
+    QtTokenWrapper *token;
     return dbManager->readToken(id, token) && token != nullptr;
 }
 
 bool TestDatabaseManager::urlExistsInDatabase(quint32 id)
 {
-    std::shared_ptr<Url> url;
+    QtUrlWrapper *url;
     return dbManager->readUrl(id, url) && url != nullptr;
 }
 
@@ -47,9 +47,10 @@ void TestDatabaseManager::testSaveToken()
     const std::time_t testDate = QDateTime::currentSecsSinceEpoch();
 
     Token token(testToken, testDate);
+    QtTokenWrapper qtToken(token);
 
     // Test save
-    QVERIFY(dbManager->saveToken(token));
+    QVERIFY(dbManager->saveToken(qtToken));
     QVERIFY(tokenExistsInDatabase(testId));
 }
 
@@ -58,39 +59,40 @@ void TestDatabaseManager::testReadToken()
     // First save a token
     const std::string originalToken = "test_read_token";
     const std::time_t originalDate = QDateTime::currentSecsSinceEpoch();
-    dbManager->saveToken(Token(originalToken, originalDate));
+    Token token(originalToken, originalDate);
+    dbManager->saveToken(QtTokenWrapper(token));
 
     // Test read
-    std::shared_ptr<Token> readToken;
+    QtTokenWrapper *readToken;
     QVERIFY(dbManager->readToken(testId, readToken));
     QVERIFY(readToken != nullptr);
-    QCOMPARE(readToken->getTokenString(), originalToken);
-    QCOMPARE(readToken->getCreationDate(), originalDate);
+    QCOMPARE(readToken->tokenString().toStdString(), originalToken);
+    QCOMPARE(readToken->creationDate().toSecsSinceEpoch(), originalDate);
 }
 
 void TestDatabaseManager::testUpdateToken()
 {
     // Create initial token
-    dbManager->saveToken(Token("old_token", QDateTime::currentSecsSinceEpoch()));
+    dbManager->saveToken(QtTokenWrapper(Token("old_token", QDateTime::currentSecsSinceEpoch())));
 
     // Update token
     const std::string updatedToken = "updated_token";
     const std::time_t updatedDate = QDateTime::currentSecsSinceEpoch() + 100;
     Token newToken(updatedToken, updatedDate);
 
-    QVERIFY(dbManager->updateToken(testId, newToken));
+    QVERIFY(dbManager->updateToken(testId, QtTokenWrapper(newToken)));
 
     // Verify update
-    std::shared_ptr<Token> readToken;
+    QtTokenWrapper *readToken;
     QVERIFY(dbManager->readToken(testId, readToken));
-    QCOMPARE(readToken->getTokenString(), updatedToken);
-    QCOMPARE(readToken->getCreationDate(), updatedDate);
+    QCOMPARE(readToken->tokenString().toStdString(), updatedToken);
+    QCOMPARE(readToken->creationDate().toSecsSinceEpoch(), updatedDate);
 }
 
 void TestDatabaseManager::testDeleteToken()
 {
     // Create token first
-    dbManager->saveToken(Token("to_delete", QDateTime::currentSecsSinceEpoch()));
+    dbManager->saveToken(QtTokenWrapper(Token("to_delete", QDateTime::currentSecsSinceEpoch())));
 
     // Test delete
     QVERIFY(dbManager->deleteToken(testId));
@@ -104,29 +106,28 @@ void TestDatabaseManager::testSaveUrl()
     url.setNote("Test note");
     url.setTags({"tag1", "tag2"});
 
-    QVERIFY(dbManager->saveUrl(url));
+    QtUrlWrapper qtUrl(url);
+
+    QVERIFY(dbManager->saveUrl(qtUrl));
     QVERIFY(urlExistsInDatabase(testId));
 }
 
 void TestDatabaseManager::testReadUrl()
 {
     // Create test URL
-    const std::string originalUrl = "https://test.com";
-    const std::string originalNote = "Test note";
-    const std::vector<std::string> originalTags = {"test", "qtest"};
+    QString originalUrl = "https://test.com";
+    QString originalNote = "Test note";
+    QStringList originalTags = {"test", "qtest"};
 
-    Url url(originalUrl);
-    url.setNote(originalNote);
-    url.setTags(originalTags);
-    dbManager->saveUrl(url);
+    dbManager->saveUrl(QtUrlWrapper(originalUrl, originalTags, originalNote));
 
     // Test read
-    std::shared_ptr<Url> readUrl;
+    QtUrlWrapper *readUrl;
     QVERIFY(dbManager->readUrl(testId, readUrl));
     QVERIFY(readUrl != nullptr);
-    QCOMPARE(readUrl->getUrl(), originalUrl);
-    QCOMPARE(readUrl->getNote(), originalNote);
-    QCOMPARE(readUrl->getTags(), originalTags);
+    QCOMPARE(readUrl->url(), originalUrl);
+    QCOMPARE(readUrl->note(), originalNote);
+    QCOMPARE(readUrl->tags(), originalTags);
 }
 
 void TestDatabaseManager::testUpdateUrl()
@@ -135,27 +136,25 @@ void TestDatabaseManager::testUpdateUrl()
     Url original("https://original.com");
     original.setNote("Original note");
     original.setTags({"oldtag"});
-    dbManager->saveUrl(original);
+    dbManager->saveUrl(QtUrlWrapper(original));
 
-    // Update values
-    Url updated("https://updated.com");
-    updated.setNote("Updated note");
-    updated.setTags({"newtag1", "newtag2"});
+    // Updated values
+    QtUrlWrapper qtUpdated("https://updated.com", {"newtag1", "newtag2"}, "Updated note");
 
-    QVERIFY(dbManager->updateUrl(testId, updated));
+    QVERIFY(dbManager->updateUrl(testId, qtUpdated));
 
     // Verify update
-    std::shared_ptr<Url> readUrl;
+    QtUrlWrapper *readUrl;
     QVERIFY(dbManager->readUrl(testId, readUrl));
-    QCOMPARE(readUrl->getUrl(), updated.getUrl());
-    QCOMPARE(readUrl->getNote(), updated.getNote());
-    QCOMPARE(readUrl->getTags(), updated.getTags());
+    QCOMPARE(readUrl->url(), qtUpdated.url());
+    QCOMPARE(readUrl->note(), qtUpdated.note());
+    QCOMPARE(readUrl->tags(), qtUpdated.tags());
 }
 
 void TestDatabaseManager::testDeleteUrl()
 {
     // Create URL first
-    dbManager->saveUrl(Url("https://todelete.com"));
+    dbManager->saveUrl(QtUrlWrapper("https://todelete.com"));
 
     QVERIFY(dbManager->deleteUrl(testId));
     QVERIFY(!urlExistsInDatabase(testId));
@@ -164,16 +163,15 @@ void TestDatabaseManager::testDeleteUrl()
 void TestDatabaseManager::testUrlTags()
 {
     // Test tag persistence
-    const std::vector<std::string> tags = {"tag1", "tag2", "tag3"};
-    Url url("https://tags.com");
-    url.setTags(tags);
+    QStringList tags = {"tag1", "tag2", "tag3"};
+    QtUrlWrapper qtUrl("https://example.com", tags, "");
 
-    QVERIFY(dbManager->saveUrl(url));
+    QVERIFY(dbManager->saveUrl(qtUrl));
 
-    std::shared_ptr<Url> readUrl;
+    QtUrlWrapper *readUrl;
     QVERIFY(dbManager->readUrl(testId, readUrl));
-    QCOMPARE(readUrl->getTags().size(), tags.size());
-    QVERIFY(readUrl->getTags() == tags);
+    QCOMPARE(readUrl->tags().size(), tags.size());
+    QVERIFY(readUrl->tags() == tags);
 }
 
 void TestDatabaseManager::testTransactionRollback()
@@ -182,7 +180,7 @@ void TestDatabaseManager::testTransactionRollback()
     Url invalidUrl(""); // Invalid empty URL
     invalidUrl.setTags({"should", "not", "save"});
 
-    QVERIFY(!dbManager->saveUrl(invalidUrl)); // Should fail
+    QVERIFY(!dbManager->saveUrl(QtUrlWrapper(invalidUrl))); // Should fail
 
     // Verify nothing was saved
     QVERIFY(!urlExistsInDatabase(testId));

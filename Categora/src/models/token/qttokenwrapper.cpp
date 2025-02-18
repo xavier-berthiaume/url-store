@@ -45,3 +45,27 @@ QtTokenWrapper* QtTokenWrapper::fromVariantMap(const QVariantMap& data,
         parent
         );
 }
+
+bool QtTokenWrapper::operator==(const QtTokenWrapper &other) const
+{
+    if (other.m_token.getTokenString() != m_token.getTokenString())
+        return false;
+
+    if (other.m_token.getCreationDate() != m_token.getCreationDate())
+        return false;
+
+    return true;
+}
+
+bool QtTokenWrapper::operator!=(const QtTokenWrapper &other) const
+{
+    return !(*this == other);
+}
+
+QDebug operator<<(QDebug debug, const QtTokenWrapper &token)
+{
+    debug.nospace() << "Token: " << token.tokenString()
+                    << "\nCreation Date" << token.creationDate();
+
+    return debug;
+}

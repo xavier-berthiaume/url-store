@@ -1,8 +1,8 @@
 #include <QCoreApplication>
 
-#include "../src/db/sqlitedbmanager.h"
-#include "../src/models/token/token.h"
-#include "../src/models/url/url.h"
+#include "../../src/db/sqlitedbmanager.h"
+#include "../../src/models/token/qttokenwrapper.h"
+#include "../../src/models/url/qturlwrapper.h"
 
 int main(int argc, char *argv[])
 {
@@ -35,16 +35,29 @@ int main(int argc, char *argv[])
     }
     */
 
-    Token token = Token("This is a token ;)", 123123123);
-
-    SqliteDbManager manager = SqliteDbManager("");
+    SqliteDbManager manager("");
     manager.init();
-    manager.saveToken(token);
 
-    std::shared_ptr<Token> token2;
-    manager.readToken(1, token2);
-    qDebug() << QString::fromStdString(token2->getTokenString());
-    manager.close();
+    QtTokenWrapper token("asdf-asdfasdf-asdfasdfas-asdfasdfa", QDateTime(QDateTime::currentDateTime()));
+    QtTokenWrapper *readToken = nullptr;
+
+    QtUrlWrapper url("https://example.com", {"tag1", "tag2", "tag3"}, "This is my note");
+    QtUrlWrapper *readUrl = nullptr;
+
+    qDebug() << "Saved token: " << manager.saveToken(token);
+    qDebug() << "Saved url: " << manager.saveUrl(url);
+
+    qDebug() << "Is token read successful: " << manager.readToken(1, readToken);
+    qDebug() << "Is url read successful: " << manager.readUrl(1, readUrl);
+
+    qDebug() << "This is the read token\n" << readToken;
+    qDebug() << "This is the read url\n" << readUrl;
+
+    qDebug() << "Read token matches initial token: " << (*readToken == token);
+    qDebug() << "Read url matches initial url: " << (*readUrl == url);
+
+    delete readToken;
+    delete readUrl;
 
     return app.exec();
 }

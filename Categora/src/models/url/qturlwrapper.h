@@ -18,6 +18,7 @@ public:
     explicit QtUrlWrapper(QObject *parent = nullptr);
     explicit QtUrlWrapper(const Url& url, QObject *parent = nullptr);
     explicit QtUrlWrapper(const QString& url, QObject *parent = nullptr);
+    explicit QtUrlWrapper(const QString& url, const QStringList &tags, const QString &note, QObject *parent = nullptr);
 
     // Conversion to/from core Url object
     Url coreUrl() const;
@@ -31,6 +32,10 @@ public:
     // Database interaction helpers
     QVariantMap toVariantMap() const;
     static QtUrlWrapper* fromVariantMap(const QVariantMap& data, QObject* parent = nullptr);
+
+    bool operator==(const QtUrlWrapper &other) const;
+    bool operator!=(const QtUrlWrapper &other) const;
+    friend QDebug operator<<(QDebug debug, const QtUrlWrapper &url);
 
 public slots:
     void setUrl(const QString& url);

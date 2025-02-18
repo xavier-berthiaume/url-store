@@ -12,6 +12,18 @@ QtUrlWrapper::QtUrlWrapper(const Url& url, QObject *parent)
 QtUrlWrapper::QtUrlWrapper(const QString& url, QObject *parent)
     : QObject(parent), m_url(url.toStdString()) {}
 
+QtUrlWrapper::QtUrlWrapper(const QString &url, const QStringList &tags, const QString &note, QObject *parent)
+    : QObject(parent)
+{
+    std::vector<std::string> tag_vector;
+
+    for (const auto &i : tags) {
+        tag_vector.push_back(i.toStdString());
+    }
+
+    m_url = Url(url.toStdString(), tag_vector, note.toStdString());
+}
+
 Url QtUrlWrapper::coreUrl() const {
     return m_url;
 }
@@ -95,4 +107,39 @@ QtUrlWrapper* QtUrlWrapper::fromVariantMap(const QVariantMap& data, QObject* par
     }());
     url.setNote(data["note"].toString().toStdString());
     return new QtUrlWrapper(url, parent);
+}
+
+bool QtUrlWrapper::operator==(const QtUrlWrapper &other) const
+{
+    if (other.m_url.getUrl() != m_url.getUrl())
+        return false;
+
+    if (other.m_url.getNote() != m_url.getUrl())
+        return false;
+
+    if (other.m_url.getTags().size() != m_url.getTags().size())
+        return false;
+
+    std::vector<std::string> tags1 = m_url.getTags(), tags2 = other.m_url.getTags();
+
+    for (int i = 0; i < m_url.getTags().size(); i++) {
+        if (tags1.at(i) == tags2.at(i))
+            return false;
+    }
+
+    return true;
+}
+
+bool QtUrlWrapper::operator!=(const QtUrlWrapper &other) const
+{
+    return !(*this == other);
+}
+
+QDebug operator<<(QDebug debug, const QtUrlWrapper &url)
+{
+    debug.nospace() << "Url: " << url.url()
+                    << "\nTags: " << url.tags()
+                    << "\nNotes: " << url.note();
+
+    return debug;
 }

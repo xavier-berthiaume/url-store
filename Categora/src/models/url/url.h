@@ -14,6 +14,7 @@ class Url
 public:
     Url();
     Url(const std::string &url);
+    Url(const std::string &url, const std::vector<std::string> &tags, const std::string &note);
 
     std::string getUrl() const;
     std::vector<std::string> getTags() const;

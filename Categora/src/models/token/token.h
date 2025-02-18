@@ -11,10 +11,7 @@ class Token
 
 public:
     Token(const std::string &token_string, const std::time_t &creation_date);
-    Token(const Token& other) = default;
-
-    // Deleted to enfore immutability
-    Token& operator=(const Token& other) = delete;
+    Token(const Token& other);
 
     const std::string getTokenString() const;
     const std::time_t getCreationDate() const;
