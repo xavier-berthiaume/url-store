@@ -49,6 +49,7 @@ signals:
 
 private:
     Url m_url;
+
 };
 
 #endif // QTURLWRAPPER_H

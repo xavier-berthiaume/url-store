@@ -114,7 +114,7 @@ bool QtUrlWrapper::operator==(const QtUrlWrapper &other) const
     if (other.m_url.getUrl() != m_url.getUrl())
         return false;
 
-    if (other.m_url.getNote() != m_url.getUrl())
+    if (other.m_url.getNote() != m_url.getNote())
         return false;
 
     if (other.m_url.getTags().size() != m_url.getTags().size())
@@ -122,8 +122,8 @@ bool QtUrlWrapper::operator==(const QtUrlWrapper &other) const
 
     std::vector<std::string> tags1 = m_url.getTags(), tags2 = other.m_url.getTags();
 
-    for (int i = 0; i < m_url.getTags().size(); i++) {
-        if (tags1.at(i) == tags2.at(i))
+    for (int i = 0; i < tags1.size(); i++) {
+        if (tags1.at(i) != tags2.at(i))
             return false;
     }
 

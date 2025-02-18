@@ -13,6 +13,10 @@ add_executable(test_sqlite_db_manager
     "testsqlitedatabasemanager.h"
 )
 
+add_executable(test_model_operators
+    "testmodeloperators.cpp"
+)
+
 target_link_libraries(test_tcp_server PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Test
@@ -31,6 +35,12 @@ target_link_libraries(test_sqlite_db_manager PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Test
     Qt${QT_VERSION_MAJOR}::Sql
+    BusinessLogic
+)
+
+target_link_libraries(test_model_operators PRIVATE
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Test
     BusinessLogic
 )
 

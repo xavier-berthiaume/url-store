@@ -46,7 +46,7 @@ bool SqliteDbManager::saveToken(const QtTokenWrapper &token)
     return true;
 }
 
-bool SqliteDbManager::readToken(quint32 id, QtTokenWrapper *token)
+bool SqliteDbManager::readToken(quint32 id, QtTokenWrapper *&token)
 {
     QSqlQuery query;
     query.prepare("SELECT token, creationDate FROM tokens WHERE id = :id");
@@ -138,7 +138,7 @@ bool SqliteDbManager::saveUrl(const QtUrlWrapper &url) {
     }
 }
 
-bool SqliteDbManager::readUrl(quint32 id, QtUrlWrapper *url) {
+bool SqliteDbManager::readUrl(quint32 id, QtUrlWrapper *&url) {
     QSqlQuery query;
     query.prepare(
         "SELECT url, note, createdDate FROM urls "
