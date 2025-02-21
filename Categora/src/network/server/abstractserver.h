@@ -3,10 +3,13 @@
 
 #include <QMap>
 
+#include "db/abstractdbmanager.h"
+
 class AbstractServer
 {
 
 protected:
+    AbstractDbManager *m_db;
     QMap<QString, QString> m_tokens;
     QMap<QString, QStringList> m_url_store;
 
@@ -15,7 +18,7 @@ protected:
     void handleRequest(const QString &request, std::function<void(const QString &)> sendResponse);
 
 public:
-    AbstractServer();
+    AbstractServer(AbstractDbManager *manager = nullptr);
 
     virtual void startServer(quint16 port) = 0;
     virtual void stopServer() = 0;

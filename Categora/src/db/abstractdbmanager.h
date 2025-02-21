@@ -17,11 +17,13 @@ public:
 
     virtual bool saveToken(const QtTokenWrapper &token) = 0;
     virtual bool readToken(quint32 id, QtTokenWrapper *&token) = 0;
+    virtual bool readToken(const QString &tokenString, QtTokenWrapper *&token) = 0;
     virtual bool updateToken(quint32 id, const QtTokenWrapper &token) = 0;
     virtual bool deleteToken(quint32 id) = 0;
 
     virtual bool saveUrl(const QtUrlWrapper &url) = 0;
     virtual bool readUrl(quint32 id, QtUrlWrapper *&url) = 0;
+    virtual bool readUrlFromToken(const QString &tokenString, QList<QtUrlWrapper *> &urlList);
     virtual bool updateUrl(quint32 id, const QtUrlWrapper &url) = 0;
     virtual bool deleteUrl(quint32 id) = 0;
 

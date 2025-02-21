@@ -3,8 +3,11 @@
 #include <QUuid>
 #include <QDebug>
 
-AbstractServer::AbstractServer()
-{}
+AbstractServer::AbstractServer(AbstractDbManager *manager)
+    : m_db(manager)
+{
+
+}
 
 QString AbstractServer::generateToken() {
     return QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -26,16 +29,21 @@ void AbstractServer::handleRequest(const QString &request, std::function<void(co
     QString response;
 
     if (method == "AUTH") {
-        // Generate and store a new permanent token
-        QString token = generateToken();
+        QtTokenWrapper token(generateToken(), QDateTime(QDateTime::currentDateTime()));
+        if (m_db != nullptr) {
+            m_db->saveToken(token);
+        }
         m_tokens[token] = "client";
-        response = "TOKEN " + token + "\n";
+        response = "TOKEN " + token.tokenString() + "\n";
     } else if (method == "POST") {
         if (parts.size() < 3 || !isValidToken(parts[1])) {
             response = "ERROR: Invalid token or request format.\n";
         } else {
             QString token = parts[1];
             QString url = parts[2];
+            if (m_db != nullptr) {
+                // m_db->saveUrl();
+            }
             m_url_store[token].append(url);
             response = "OK: URL stored.\n";
 

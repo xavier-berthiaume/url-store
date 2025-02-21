@@ -66,6 +66,25 @@ bool SqliteDbManager::readToken(quint32 id, QtTokenWrapper *&token)
     return true;
 }
 
+bool SqliteDbManager::readToken(const QString &tokenString, QtTokenWrapper *&token)
+{
+    QSqlQuery query;
+    query.prepare("SELECT token, creationDate FROM tokens WHERE token = :tokenString");
+    query.bindValue(":tokenString", tokenString);
+
+    if (!query.exec() || !query.next()) {
+        qWarning() << "Error reading token: " << query.lastError();
+        return false;
+    }
+
+    token = new QtTokenWrapper(
+        query.value(0).toString(),
+        QDateTime(QDateTime::fromSecsSinceEpoch(query.value(1).toLongLong()))
+    );
+
+    return true;
+}
+
 bool SqliteDbManager::updateToken(quint32 id, const QtTokenWrapper &token)
 {
     QSqlQuery query;
@@ -178,6 +197,97 @@ bool SqliteDbManager::readUrl(quint32 id, QtUrlWrapper *&url) {
     return true;
 }
 
+bool SqliteDbManager::readUrlFromToken(const QString &token, QList<QtUrlWrapper *> &urlList)
+{
+    QSqlQuery query;
+
+    // Step 1: Find the token_id for the given token
+    query.prepare("SELECT id FROM tokens WHERE token = :token");
+    query.bindValue(":token", token);
+
+    if (!query.exec()) {
+        qWarning() << "Error finding token_id:" << query.lastError();
+        return false;
+    }
+
+    if (!query.next()) {
+        qWarning() << "No token found with value:" << token;
+        return false;
+    }
+
+    int tokenId = query.value(0).toInt(); // Get the token_id
+
+    // Step 2: Find all url_ids associated with the token_id
+    query.prepare(
+        "SELECT url_id FROM token_url "
+        "WHERE token_id = :token_id"
+        );
+    query.bindValue(":token_id", tokenId);
+
+    if (!query.exec()) {
+        qWarning() << "Error finding url_ids:" << query.lastError();
+        return false;
+    }
+
+    QList<int> urlIds;
+    while (query.next()) {
+        urlIds.append(query.value(0).toInt()); // Collect all url_ids
+    }
+
+    if (urlIds.isEmpty()) {
+        qWarning() << "No URLs found for token:" << token;
+        return false;
+    }
+
+    // Step 3: Retrieve URLs and their tags
+    for (int urlId : urlIds) {
+        // Get URL details (url, note, createdDate)
+        query.prepare(
+            "SELECT url, note, createdDate FROM urls "
+            "WHERE id = :url_id"
+            );
+        query.bindValue(":url_id", urlId);
+
+        if (!query.exec()) {
+            qWarning() << "Error retrieving URL:" << query.lastError();
+            continue; // Skip this URL and continue with the next one
+        }
+
+        if (query.next()) {
+            QString url = query.value(0).toString();
+            QString note = query.value(1).toString();
+
+            // Get tags for this URL
+            QSqlQuery tagQuery;
+            tagQuery.prepare(
+                "SELECT tag FROM url_tags "
+                "WHERE url_id = :url_id"
+                );
+            tagQuery.bindValue(":url_id", urlId);
+
+            QStringList tags;
+            if (tagQuery.exec()) {
+                while (tagQuery.next()) {
+                    tags.append(tagQuery.value(0).toString());
+                }
+            } else {
+                qWarning() << "Error retrieving tags:" << tagQuery.lastError();
+            }
+
+            // Create QtUrlWrapper with URL, tags, and note
+            QtUrlWrapper* urlWrapper = new QtUrlWrapper(
+                url,   // URL
+                tags,   // Tags (QStringList)
+                note,   // Note
+                nullptr // Parent (adjust as needed)
+                );
+            urlList.append(urlWrapper);
+        }
+    }
+
+    return true;
+}
+
 bool SqliteDbManager::updateUrl(quint32 id, const QtUrlWrapper &url) {
     QSqlDatabase::database().transaction();
 
@@ -244,7 +354,10 @@ void SqliteDbManager::close()
 
 bool SqliteDbManager::createTables()
 {
-    return createTokenTable() && createUrlTable() && createUrlTagsTable();
+    return createTokenTable()
+           && createTokenUrlJunction()
+           && createUrlTable()
+           && createUrlTagsTable();
 }
 
 bool SqliteDbManager::createTokenTable()
@@ -268,6 +381,19 @@ bool SqliteDbManager::createUrlTable()
         "  createdDate INTEGER NOT NULL"
         ")";
     return execQuery(createTableQuery, "url");
+}
+
+bool SqliteDbManager::createTokenUrlJunction()
+{
+    QString createTableQuery =
+        "CREATE TABLE IF NOT EXISTS token_url ("
+        "  token_id INTEGER NOT NULL,"
+        "  url_id INTEGER NOT NULL,"
+        "  FOREIGN KEY(token_id) REFERENCES tokens(id) ON DELETE CASCADE,"
+        "  FOREIGN KEY(url_id) REFERENCES urls(id) ON DELETE CASCADE,"
+        "  PRIMARY KEY(token_id, url_id)"
+        ")";
+    return execQuery(createTableQuery, "token_url");
 }
 
 bool SqliteDbManager::createUrlTagsTable()
