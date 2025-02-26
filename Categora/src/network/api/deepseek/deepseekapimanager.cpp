@@ -45,7 +45,7 @@ void DeepSeekApiManager::fetchTags(const QString &urlOrContent)
     QByteArray data = doc.toJson();
 
     currentReply = networkManager->post(request, data);
-    requestTypeMap[currentReply] = FetchTags;
+    requestTypeMap[currentReply] = qMakePair(FetchTags, urlOrContent);
 }
 
 // TODO: IMPLEMENT TO FETCH PAGE CONTENT
@@ -74,13 +74,17 @@ void DeepSeekApiManager::onReplyFinished(QNetworkReply *reply)
     QJsonDocument responseDoc = QJsonDocument::fromJson(reply->readAll());
     QJsonObject responseObj = responseDoc.object();
 
-    if (requestTypeMap[reply] == FetchTags) {
+    auto requestInfo = requestTypeMap.value(reply);
+    RequestType type = requestInfo.first;
+    QString originalUrl = requestInfo.second;
+
+    if (type == FetchTags) {
         if (responseObj.contains("choices")) {
             QJsonArray choices = responseObj["choices"].toArray();
             if (!choices.isEmpty()) {
                 QString content = choices[0].toObject()["message"].toObject()["content"].toString();
                 QStringList tags = content.split(": ").last().split(", ");
-                emit tagsFetched(tags);
+                emit tagsFetched(originalUrl, tags);
             }
         }
     }

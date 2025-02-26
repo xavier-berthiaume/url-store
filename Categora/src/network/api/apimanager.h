@@ -16,7 +16,7 @@ protected:
     };
 
     QNetworkAccessManager *networkManager;
-    QHash<QNetworkReply *, RequestType> requestTypeMap;
+    QHash<QNetworkReply *, QPair<RequestType, QString>> requestTypeMap;
     QString apiKey;
 
 public:
@@ -33,7 +33,7 @@ public:
     virtual void cancelRequest() = 0;
 
 signals:
-    void tagsFetched(const QStringList &tags);
+    void tagsFetched(const QString &url, const QStringList &tags);
     void pageFetched(const QString &content);
     void errorFetchingData(const QString &error);
 };

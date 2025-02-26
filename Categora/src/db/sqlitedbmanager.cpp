@@ -276,10 +276,10 @@ bool SqliteDbManager::readUrlFromToken(const QString &token, QList<QtUrlWrapper 
 
             // Create QtUrlWrapper with URL, tags, and note
             QtUrlWrapper* urlWrapper = new QtUrlWrapper(
-                url,   // URL
-                tags,   // Tags (QStringList)
-                note,   // Note
-                nullptr // Parent (adjust as needed)
+                url,
+                tags,
+                note,
+                this
                 );
             urlList.append(urlWrapper);
         }
