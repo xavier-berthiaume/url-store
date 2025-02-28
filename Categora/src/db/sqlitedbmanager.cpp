@@ -389,6 +389,16 @@ bool SqliteDbManager::deleteUrl(quint32 id) {
     return true;
 }
 
+bool SqliteDbManager::addUrlOwner(const QtTokenWrapper &owner, const QtUrlWrapper &url)
+{
+    return true;
+}
+
+bool SqliteDbManager::removeUrlOwner(const QtTokenWrapper &owner, const QtUrlWrapper &url)
+{
+    return true;
+}
+
 void SqliteDbManager::close()
 {
     m_database.close();

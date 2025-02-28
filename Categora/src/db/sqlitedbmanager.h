@@ -33,8 +33,8 @@ public:
     bool updateUrl(quint32 id, const QtUrlWrapper &url) override;
     bool deleteUrl(quint32 id) override;
 
-    bool addUrlOwner(const QtTokenWrapper *owner, const QtUrlWrapper *url) override;
-    bool removeUrlOwner(const QtTokenWrapper *owner, const QtUrlWrapper *url) override;
+    bool addUrlOwner(const QtTokenWrapper &owner, const QtUrlWrapper &url) override;
+    bool removeUrlOwner(const QtTokenWrapper &owner, const QtUrlWrapper &url) override;
 
     void close() override;
 

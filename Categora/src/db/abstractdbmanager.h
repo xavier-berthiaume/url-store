@@ -28,8 +28,8 @@ public:
     virtual bool updateUrl(quint32 id, const QtUrlWrapper &url) = 0;
     virtual bool deleteUrl(quint32 id) = 0;
 
-    virtual bool addUrlOwner(const QtTokenWrapper *owner, const QtUrlWrapper *url) = 0;
-    virtual bool removeUrlOwner(const QtTokenWrapper *owner, const QtUrlWrapper *url) = 0;
+    virtual bool addUrlOwner(const QtTokenWrapper &owner, const QtUrlWrapper &url) = 0;
+    virtual bool removeUrlOwner(const QtTokenWrapper &owner, const QtUrlWrapper &url) = 0;
 
     virtual void close() = 0;
 
