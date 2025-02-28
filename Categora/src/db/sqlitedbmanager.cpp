@@ -197,6 +197,48 @@ bool SqliteDbManager::readUrl(quint32 id, QtUrlWrapper *&url) {
     return true;
 }
 
+bool SqliteDbManager::readUrl(const QString &urlString, QtUrlWrapper *&url)
+{
+    QSqlQuery query;
+    query.prepare(
+        "SELECT id, url, note, createdDate FROM urls "
+        "WHERE url = :urlString"
+        );
+    query.bindValue(":urlString", urlString);
+
+    if (!query.exec() || !query.next()) {
+        qWarning() << "URL read error:" << query.lastError();
+        return false;
+    }
+
+    // Get main URL data
+    quint32 urlId = query.value(0).toUInt();
+    QString urlStr = query.value(1).toString();
+    QString note = query.value(2).toString();
+
+    // Get tags
+    QSqlQuery tagQuery;
+    tagQuery.prepare(
+        "SELECT tag FROM url_tags "
+        "WHERE url_id = :id"
+        );
+    tagQuery.bindValue(":id", urlId);
+
+    QStringList tags;
+    if (tagQuery.exec()) {
+        while (tagQuery.next()) {
+            tags << tagQuery.value(0).toString();
+        }
+    }
+
+    // Create URL object
+    url = new QtUrlWrapper(urlStr, tags, note, this);
+    url->setNote(note);
+    url->setTags(tags);
+
+    return true;
+}
+
 bool SqliteDbManager::readUrlFromToken(const QString &token, QList<QtUrlWrapper *> &urlList)
 {
     QSqlQuery query;

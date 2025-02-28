@@ -28,9 +28,13 @@ public:
 
     bool saveUrl(const QtUrlWrapper &url) override;
     bool readUrl(quint32 id, QtUrlWrapper *&url) override;
+    bool readUrl(const QString &urlString, QtUrlWrapper *&url) override;
     bool readUrlFromToken(const QString &tokenString, QList<QtUrlWrapper *> &urlList) override;
     bool updateUrl(quint32 id, const QtUrlWrapper &url) override;
     bool deleteUrl(quint32 id) override;
+
+    bool addUrlOwner(const QtTokenWrapper *owner, const QtUrlWrapper *url) override;
+    bool removeUrlOwner(const QtTokenWrapper *owner, const QtUrlWrapper *url) override;
 
     void close() override;
 
