@@ -5,14 +5,15 @@
 
 #include "abstractserver.h"
 
-class TcpServer : public QTcpServer, public AbstractServer
+class TcpServer : public AbstractServer
 {
     Q_OBJECT
 
+    QTcpServer *server;
     QList<QTcpSocket*> activeSockets;
 
 public:
-    explicit TcpServer(QObject *parent = nullptr);
+    explicit TcpServer(AbstractDbManager *m_db, ApiManager *m_api, QObject *parent = nullptr);
     void startServer(quint16 port) override;
     void stopServer() override;
 

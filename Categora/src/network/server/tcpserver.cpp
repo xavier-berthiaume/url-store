@@ -3,17 +3,17 @@
 #include <QTcpSocket>
 #include <QUuid>
 
-TcpServer::TcpServer(QObject *parent)
-    : QTcpServer(parent)
-    , AbstractServer()
+TcpServer::TcpServer(AbstractDbManager *m_db, ApiManager *m_api, QObject *parent)
+    : AbstractServer(m_db, m_api, parent)
 {
+    server = new QTcpServer(this);
     qDebug() << "Connecting TcpServer new connection handler:"
-             << connect(this, &QTcpServer::newConnection, this, &TcpServer::handleNewConnection);
+             << connect(server, &QTcpServer::newConnection, this, &TcpServer::handleNewConnection);
 }
 
 void TcpServer::startServer(quint16 port)
 {
-    if (!listen(QHostAddress::Any, port)) {
+    if (!server->listen(QHostAddress::Any, port)) {
         qCritical() << "Failed to start server on port" << port;
         exit(1);
     }
@@ -22,14 +22,14 @@ void TcpServer::startServer(quint16 port)
 }
 
 void TcpServer::stopServer() {
-    close();
+    server->close();
     qDebug() << "TCP Server stopped.";
 }
 
 
 void TcpServer::handleNewConnection()
 {
-    QTcpSocket *socket = nextPendingConnection();
+    QTcpSocket *socket = server->nextPendingConnection();
     // activeSockets.append(socket);
 
     connect(socket, &QTcpSocket::readyRead, this, &TcpServer::handleReadyRead);
