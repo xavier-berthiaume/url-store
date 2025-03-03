@@ -60,6 +60,10 @@ QString QtUrlWrapper::note() const {
     return QString::fromStdString(m_url.getNote());
 }
 
+int QtUrlWrapper::getId() const {
+    return id;
+}
+
 void QtUrlWrapper::setUrl(const QString& url) {
     const std::string newUrl = url.toStdString();
     if (m_url.getUrl() != newUrl) {
@@ -86,6 +90,10 @@ void QtUrlWrapper::setNote(const QString& note) {
         m_url.setNote(newNote);
         emit noteChanged(note);
     }
+}
+
+void QtUrlWrapper::setId(int id) {
+    this->id = id;
 }
 
 QVariantMap QtUrlWrapper::toVariantMap() const {

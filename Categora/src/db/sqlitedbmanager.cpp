@@ -28,7 +28,7 @@ bool SqliteDbManager::init()
     return true;
 }
 
-bool SqliteDbManager::saveToken(const QtTokenWrapper &token)
+bool SqliteDbManager::saveToken(QtTokenWrapper &token)
 {
     QSqlQuery query;
     query.prepare(
@@ -42,6 +42,10 @@ bool SqliteDbManager::saveToken(const QtTokenWrapper &token)
         qWarning() << "Error saving token:" << query.lastError();
         return false;
     }
+
+    // Get last inserted ID
+    const quint64 urlId = query.lastInsertId().toULongLong();
+    token.setId(urlId);
 
     return true;
 }
@@ -63,13 +67,15 @@ bool SqliteDbManager::readToken(quint32 id, QtTokenWrapper *&token)
         this
     );
 
+    token->setId(id);
+
     return true;
 }
 
 bool SqliteDbManager::readToken(const QString &tokenString, QtTokenWrapper *&token)
 {
     QSqlQuery query;
-    query.prepare("SELECT token, creationDate FROM tokens WHERE token = :tokenString");
+    query.prepare("SELECT id, token, creationDate FROM tokens WHERE token = :tokenString");
     query.bindValue(":tokenString", tokenString);
 
     if (!query.exec() || !query.next()) {
@@ -78,9 +84,11 @@ bool SqliteDbManager::readToken(const QString &tokenString, QtTokenWrapper *&tok
     }
 
     token = new QtTokenWrapper(
-        query.value(0).toString(),
-        QDateTime(QDateTime::fromSecsSinceEpoch(query.value(1).toLongLong()))
+        query.value(1).toString(),
+        QDateTime(QDateTime::fromSecsSinceEpoch(query.value(2).toLongLong()))
     );
+
+    token->setId(query.value(0).toInt());
 
     return true;
 }
@@ -106,8 +114,7 @@ bool SqliteDbManager::deleteToken(quint32 id)
     QSqlQuery query;
     query.prepare("DELETE FROM tokens WHERE id=:id");
     query.bindValue(":id", id);
-
-    if (!query.exec()) {
+ if (!query.exec()) {
         qWarning() << "Error deleting token " << query.lastError();
         return false;
     }
@@ -115,7 +122,8 @@ bool SqliteDbManager::deleteToken(quint32 id)
     return true;
 }
 
-bool SqliteDbManager::saveUrl(const QtUrlWrapper &url) {
+bool SqliteDbManager::saveUrl(QtUrlWrapper &url)
+{
     QSqlDatabase::database().transaction(); // Start transaction
 
     try {
@@ -133,6 +141,7 @@ bool SqliteDbManager::saveUrl(const QtUrlWrapper &url) {
 
         // Get last inserted ID
         const quint64 urlId = query.lastInsertId().toULongLong();
+        url.setId(urlId);
 
         // Insert tags
         for (const auto& tag : url.tags()) {
@@ -157,7 +166,8 @@ bool SqliteDbManager::saveUrl(const QtUrlWrapper &url) {
     }
 }
 
-bool SqliteDbManager::readUrl(quint32 id, QtUrlWrapper *&url) {
+bool SqliteDbManager::readUrl(quint32 id, QtUrlWrapper *&url)
+{
     QSqlQuery query;
     query.prepare(
         "SELECT url, note, createdDate FROM urls "
@@ -193,6 +203,7 @@ bool SqliteDbManager::readUrl(quint32 id, QtUrlWrapper *&url) {
     url = new QtUrlWrapper(urlStr, tags, note, this);
     url->setNote(note);
     url->setTags(tags);
+    url->setId(id);
 
     return true;
 }
@@ -212,7 +223,7 @@ bool SqliteDbManager::readUrl(const QString &urlString, QtUrlWrapper *&url)
     }
 
     // Get main URL data
-    quint32 urlId = query.value(0).toUInt();
+    quint32 urlId = query.value(0).toInt();
     QString urlStr = query.value(1).toString();
     QString note = query.value(2).toString();
 
@@ -235,6 +246,7 @@ bool SqliteDbManager::readUrl(const QString &urlString, QtUrlWrapper *&url)
     url = new QtUrlWrapper(urlStr, tags, note, this);
     url->setNote(note);
     url->setTags(tags);
+    url->setId(urlId);
 
     return true;
 }
@@ -283,54 +295,20 @@ bool SqliteDbManager::readUrlFromToken(const QString &token, QList<QtUrlWrapper 
 
     // Step 3: Retrieve URLs and their tags
     for (int urlId : urlIds) {
-        // Get URL details (url, note, createdDate)
-        query.prepare(
-            "SELECT url, note, createdDate FROM urls "
-            "WHERE id = :url_id"
-            );
-        query.bindValue(":url_id", urlId);
+        QtUrlWrapper *urlWrapper;
 
-        if (!query.exec()) {
-            qWarning() << "Error retrieving URL:" << query.lastError();
-            continue; // Skip this URL and continue with the next one
+        if (!readUrl(urlId, urlWrapper)) {
+            break;
         }
 
-        if (query.next()) {
-            QString url = query.value(0).toString();
-            QString note = query.value(1).toString();
-
-            // Get tags for this URL
-            QSqlQuery tagQuery;
-            tagQuery.prepare(
-                "SELECT tag FROM url_tags "
-                "WHERE url_id = :url_id"
-                );
-            tagQuery.bindValue(":url_id", urlId);
-
-            QStringList tags;
-            if (tagQuery.exec()) {
-                while (tagQuery.next()) {
-                    tags.append(tagQuery.value(0).toString());
-                }
-            } else {
-                qWarning() << "Error retrieving tags:" << tagQuery.lastError();
-            }
-
-            // Create QtUrlWrapper with URL, tags, and note
-            QtUrlWrapper* urlWrapper = new QtUrlWrapper(
-                url,
-                tags,
-                note,
-                this
-                );
-            urlList.append(urlWrapper);
-        }
+        urlList.append(urlWrapper);
     }
 
     return true;
 }
 
-bool SqliteDbManager::updateUrl(quint32 id, const QtUrlWrapper &url) {
+bool SqliteDbManager::updateUrl(quint32 id, const QtUrlWrapper &url)
+{
     QSqlDatabase::database().transaction();
 
     try {
@@ -376,7 +354,8 @@ bool SqliteDbManager::updateUrl(quint32 id, const QtUrlWrapper &url) {
     }
 }
 
-bool SqliteDbManager::deleteUrl(quint32 id) {
+bool SqliteDbManager::deleteUrl(quint32 id)
+{
     QSqlQuery query;
     query.prepare("DELETE FROM urls WHERE id = :id");
     query.bindValue(":id", id);

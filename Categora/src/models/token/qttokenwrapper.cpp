@@ -27,6 +27,14 @@ QDateTime QtTokenWrapper::creationDate() const {
     return QDateTime::fromSecsSinceEpoch(m_token.getCreationDate());
 }
 
+int QtTokenWrapper::getId() const {
+    return id;
+}
+
+void QtTokenWrapper::setId(int id) {
+    this->id = id;
+}
+
 QVariantMap QtTokenWrapper::toVariantMap() const {
     return {
         {"token", tokenString()},

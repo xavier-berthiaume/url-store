@@ -58,8 +58,8 @@ QString AbstractServer::handlePost(const QString &tokenString, const QString &ur
     url.setUrl(urlString);
     m_api->fetchTags(urlString);
 
-    // TODO:
     // Third, store the url, matching it to the correct token
+    m_pending_storage[urlString] = tokenString;
 
     return "OK: URL stored.\n";
 }
@@ -73,7 +73,6 @@ QString AbstractServer::handleGet(const QString &tokenString)
     */
 
     return "OK: No URLs found.\n";
-
 }
 
 void AbstractServer::handleRequest(const QString &request, std::function<void(const QString &)> sendResponse) {
@@ -110,5 +109,26 @@ void AbstractServer::handleRequest(const QString &request, std::function<void(co
 
 void AbstractServer::handleTagsFetched(const QString &urlString, const QStringList &tags)
 {
-    // Update the url entry in the database
+    // First find the correct token
+    QtTokenWrapper *token;
+
+    if (!m_db->readToken(m_pending_storage[urlString], token)) {
+        // Bad token
+        m_pending_storage.remove(urlString);
+        return;
+    }
+
+    // Create the complete Url wrapper
+    QtUrlWrapper url = QtUrlWrapper(urlString, tags, "", this);
+
+    // Save the url
+    m_db->saveUrl(url);
+
+    // Tie the url to the token
+    if(!m_db->addUrlOwner(*token, url)) {
+        return;
+    }
+
+    // Remove the url and token from the pending pool
+    m_pending_storage.remove(urlString);
 }

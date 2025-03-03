@@ -13,6 +13,8 @@ class AbstractServer : public QObject
     AbstractDbManager *m_db;
     ApiManager *m_api;
 
+    QHash<QString, QString> m_pending_storage;
+
     QString handleAuth();
     QString handlePost(const QString &tokenString, const QString &urlString);
     QString handleGet(const QString &tokenString);

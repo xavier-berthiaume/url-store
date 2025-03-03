@@ -14,6 +14,8 @@ class QtUrlWrapper : public QObject
     Q_PROPERTY(QStringList tags READ tags WRITE setTags NOTIFY tagsChanged)
     Q_PROPERTY(QString note READ note WRITE setNote NOTIFY noteChanged)
 
+    int id;
+
 public:
     explicit QtUrlWrapper(QObject *parent = nullptr);
     explicit QtUrlWrapper(const Url& url, QObject *parent = nullptr);
@@ -28,6 +30,10 @@ public:
     QString url() const;
     QStringList tags() const;
     QString note() const;
+
+    int getId() const;
+
+    void setId(int id);
 
     // Database interaction helpers
     QVariantMap toVariantMap() const;

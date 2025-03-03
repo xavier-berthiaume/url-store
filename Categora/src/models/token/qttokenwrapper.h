@@ -12,6 +12,8 @@ class QtTokenWrapper : public QObject
     Q_PROPERTY(QString tokenString READ tokenString CONSTANT)
     Q_PROPERTY(QDateTime creationDate READ creationDate CONSTANT)
 
+    int id;
+
     Token m_token;
 
 public:
@@ -28,6 +30,10 @@ public:
 
     QString tokenString() const;
     QDateTime creationDate() const;
+
+    int getId() const;
+
+    void setId(int id);
 
     bool operator==(const QtTokenWrapper &other) const;
     bool operator!=(const QtTokenWrapper &other) const;

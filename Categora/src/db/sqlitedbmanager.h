@@ -20,13 +20,13 @@ public:
 
     bool init() override;
 
-    bool saveToken(const QtTokenWrapper &token) override;
+    bool saveToken(QtTokenWrapper &token) override;
     bool readToken(quint32 id, QtTokenWrapper *&token) override;
     bool readToken(const QString &tokenString, QtTokenWrapper *&token) override;
     bool updateToken(quint32 id, const QtTokenWrapper &token) override;
     bool deleteToken(quint32 id) override;
 
-    bool saveUrl(const QtUrlWrapper &url) override;
+    bool saveUrl(QtUrlWrapper &url) override;
     bool readUrl(quint32 id, QtUrlWrapper *&url) override;
     bool readUrl(const QString &urlString, QtUrlWrapper *&url) override;
     bool readUrlFromToken(const QString &tokenString, QList<QtUrlWrapper *> &urlList) override;
