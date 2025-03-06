@@ -42,7 +42,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SqliteDbManager db_manager("/home/xavier/Documents/database.sqlite");
+    if (!env.contains("DB_PATH")) {
+        qCritical() << "Missing DB_PATH in .env file";
+        return 1;
+    }
+
+    SqliteDbManager db_manager(env["DB_PATH"]);
     db_manager.init();
 
     DeepSeekApiManager api_manager;
