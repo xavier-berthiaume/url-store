@@ -124,6 +124,7 @@ bool SqliteDbManager::deleteToken(quint32 id)
 
 bool SqliteDbManager::saveUrl(QtUrlWrapper &url)
 {
+    qDebug() << "Storing url object: " << url;
     QSqlDatabase::database().transaction(); // Start transaction
 
     try {
@@ -370,11 +371,39 @@ bool SqliteDbManager::deleteUrl(quint32 id)
 
 bool SqliteDbManager::addUrlOwner(const QtTokenWrapper &owner, const QtUrlWrapper &url)
 {
+    QSqlQuery query;
+    query.prepare(
+        "INSERT OR IGNORE INTO token_url (token_id, url_id) "
+        "VALUES (:tokenid, :urlid)"
+        );
+
+    query.bindValue(":tokenid", owner.getId());
+    query.bindValue(":urlid", url.getId());
+
+    if (!query.exec()) {
+        qWarning() << "Token ownership of url failed";
+        return false;
+    }
+
     return true;
 }
 
 bool SqliteDbManager::removeUrlOwner(const QtTokenWrapper &owner, const QtUrlWrapper &url)
 {
+    QSqlQuery query;
+    query.prepare(
+        "DELETE FROM token_url "
+        "WHERE token_id = :tokenid AND url_id = :urlid"
+        );
+
+    query.bindValue(":tokenid", owner.getId());
+    query.bindValue(":urlid", url.getId());
+
+    if (!query.exec()) {
+        qWarning() << "Token ownership removal failed:" << query.lastError().text();
+        return false;
+    }
+
     return true;
 }
 

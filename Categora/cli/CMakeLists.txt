@@ -1,9 +1,11 @@
 # Gather CLI-specific sources
 set(CLI_SOURCES
     main.cpp
+    envloader.cpp
 )
 
 set(CLI_HEADERS
+    envloader.h
 )
 
 # Create the CLI executable

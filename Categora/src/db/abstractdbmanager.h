@@ -24,7 +24,7 @@ public:
     virtual bool saveUrl(QtUrlWrapper &url) = 0;
     virtual bool readUrl(quint32 id, QtUrlWrapper *&url) = 0;
     virtual bool readUrl(const QString &urlString, QtUrlWrapper *&url) = 0;
-    virtual bool readUrlFromToken(const QString &tokenString, QList<QtUrlWrapper *> &urlList);
+    virtual bool readUrlFromToken(const QString &tokenString, QList<QtUrlWrapper *> &urlList) = 0;
     virtual bool updateUrl(quint32 id, const QtUrlWrapper &url) = 0;
     virtual bool deleteUrl(quint32 id) = 0;
 

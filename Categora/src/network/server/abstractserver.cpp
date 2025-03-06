@@ -10,7 +10,7 @@ AbstractServer::AbstractServer(AbstractDbManager *m_db, ApiManager *m_api, QObje
     , m_api(m_api)
     , QObject(parent)
 {
-    connect(m_api, &ApiManager::fetchTags, this, &AbstractServer::handleTagsFetched);
+    connect(m_api, &ApiManager::tagsFetched, this, &AbstractServer::handleTagsFetched);
 }
 
 QString AbstractServer::generateToken() {

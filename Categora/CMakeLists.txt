@@ -13,6 +13,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets LinguistTools Network Sql Test)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets LinguistTools Network Sql Test)
 
+# Copy .env file to build directory
+configure_file(
+    ${CMAKE_SOURCE_DIR}/.env
+    ${CMAKE_BINARY_DIR}/.env
+    COPYONLY
+)
+
 # Include subdirectories
 add_subdirectory(src)
 add_subdirectory(gui)

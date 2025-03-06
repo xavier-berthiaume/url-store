@@ -1,8 +1,9 @@
 #include <QCoreApplication>
 
 #include "../../src/db/sqlitedbmanager.h"
-#include "../../src/models/token/qttokenwrapper.h"
-#include "../../src/models/url/qturlwrapper.h"
+#include "../../src/network/api/deepseek/deepseekapimanager.h"
+#include "../../src/network/server/tcpserver.h"
+#include "envloader.h"
 
 int main(int argc, char *argv[])
 {
@@ -35,30 +36,20 @@ int main(int argc, char *argv[])
     }
     */
 
-    SqliteDbManager manager("");
-    manager.init();
+    const QMap<QString, QString> env = EnvLoader::loadEnv("../.env");
+    if (!env.contains("DEEPSEEK_API_KEY")) {
+        qCritical() << "Missing DEEPSEEK_API_KEY in .env file";
+        return 1;
+    }
 
-    QtTokenWrapper token("asdf-asdfasdf-asdfasdfas-asdfasdfa", QDateTime(QDateTime::currentDateTime()));
-    QtTokenWrapper *readToken = nullptr;
+    SqliteDbManager db_manager("/home/xavier/Documents/database.sqlite");
+    db_manager.init();
 
-    QtUrlWrapper url("https://example.com", {"tag1", "tag2", "tag3"}, "This is my note");
-    QtUrlWrapper *readUrl = nullptr;
+    DeepSeekApiManager api_manager;
+    api_manager.setApiKey(env["DEEPSEEK_API_KEY"]);
 
-    qDebug() << "Saved token: " << manager.saveToken(token);
-    qDebug() << "Saved url: " << manager.saveUrl(url);
-
-    qDebug() << "Is token read successful: " << manager.readToken(1, readToken);
-    qDebug() << "Is url read successful: " << manager.readUrl(1, readUrl);
-
-    qDebug() << "This is the original token\n" << token.tokenString() << " - " << token.creationDate();
-    qDebug() << "This is the read token\n" << readToken->tokenString() << " - " << readToken->creationDate();
-    qDebug() << "This is the read url\n" << readUrl;
-
-    qDebug() << "Read token matches initial token: " << (*readToken == token);
-    qDebug() << "Read url matches initial url: " << (*readUrl == url);
-
-    delete readToken;
-    delete readUrl;
+    TcpServer server(&db_manager, &api_manager);
+    server.startServer(12345);
 
     return app.exec();
 }

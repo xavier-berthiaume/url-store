@@ -4,6 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDebug>
 
 DeepSeekApiManager::DeepSeekApiManager(QObject *parent)
     : ApiManager{parent}
@@ -25,6 +26,7 @@ void DeepSeekApiManager::setApiKey(const QString &apiKey)
 
 void DeepSeekApiManager::fetchTags(const QString &urlOrContent)
 {
+    qDebug() << "Fetching tags for url or content: " << urlOrContent;
     QUrl apiUrl(getBaseUrl());
     QNetworkRequest request(apiUrl);
 
@@ -33,16 +35,20 @@ void DeepSeekApiManager::fetchTags(const QString &urlOrContent)
 
     QJsonObject payload;
     payload["model"] = "deepseek-chat";
+    payload["stream"] = false;
 
     QJsonArray messages;
     messages.append(QJsonObject {
         {"role", "system"},
-        {"content", QString("Generate tags for this link: %1").arg(urlOrContent)},
+        {"content", QString("Generate tags for this link. I require only the tags, comma separated: %1").arg(urlOrContent)},
     });
 
     payload["messages"] = messages;
     QJsonDocument doc(payload);
     QByteArray data = doc.toJson();
+
+    qDebug() << "Posting the following request with headers " << request.headers();
+    qDebug() << "Posting the following request with data " << data;
 
     currentReply = networkManager->post(request, data);
     requestTypeMap[currentReply] = qMakePair(FetchTags, urlOrContent);
@@ -66,6 +72,12 @@ void DeepSeekApiManager::cancelRequest()
 
 void DeepSeekApiManager::onReplyFinished(QNetworkReply *reply)
 {
+    qDebug() << "=== DeepSeek API Response ===";
+    qDebug() << "URL:" << reply->url().toString();
+    qDebug() << "HTTP status:" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    qDebug() << "Error:" << reply->errorString();
+    qDebug() << "Response headers:" << reply->rawHeaderPairs();
+
     if (reply->error() != QNetworkReply::NoError) {
         emit errorFetchingData(reply->errorString());
         return;
@@ -73,6 +85,8 @@ void DeepSeekApiManager::onReplyFinished(QNetworkReply *reply)
 
     QJsonDocument responseDoc = QJsonDocument::fromJson(reply->readAll());
     QJsonObject responseObj = responseDoc.object();
+
+    qDebug() << "Response object: " << responseObj;
 
     auto requestInfo = requestTypeMap.value(reply);
     RequestType type = requestInfo.first;
@@ -83,7 +97,8 @@ void DeepSeekApiManager::onReplyFinished(QNetworkReply *reply)
             QJsonArray choices = responseObj["choices"].toArray();
             if (!choices.isEmpty()) {
                 QString content = choices[0].toObject()["message"].toObject()["content"].toString();
-                QStringList tags = content.split(": ").last().split(", ");
+                qDebug() << "Response content: " << content;
+                QStringList tags = content.split(", ");
                 emit tagsFetched(originalUrl, tags);
             }
         }
