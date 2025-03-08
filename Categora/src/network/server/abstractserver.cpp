@@ -52,27 +52,65 @@ QString AbstractServer::handlePost(const QString &tokenString, const QString &ur
         return "ERROR: Invalid token.\n";
     }
 
-    // Check to see if the url hasn't already been stored
+    // TODO: Check to see if the url hasn't already been stored
+    // to avoid sending repeat tag requests
 
     // Getting tags for the url
     url.setUrl(urlString);
     m_api->fetchTags(urlString);
 
     // Third, store the url, matching it to the correct token
-    m_pending_storage[urlString] = tokenString;
+    m_pending_url_to_token[urlString] = tokenString;
+    m_pending_token_to_url.insert(tokenString, urlString);
 
     return "OK: URL stored.\n";
 }
 
 QString AbstractServer::handleGet(const QString &tokenString)
 {
-    /*
-    if (m_url_store.contains(token)) {
-        return "URLS: " + m_url_store[token].join(", ") + "\n";
-    }
-    */
+    QList<QtUrlWrapper*> urls;
 
-    return "OK: No URLs found.\n";
+    if (!m_db->readUrlFromToken(tokenString, urls)) {
+        return "ERROR: Invalid token or request format.\n";
+    }
+
+    if (urls.isEmpty()) {
+        return "OK: No URLs found.\n";
+    }
+
+    QString response = QString("OK: Found %1 URLs\n").arg(urls.size());
+
+    // Get all urls
+    for (const auto& url : urls) {
+        // Format: "URL [TAGS] (NOTE)"
+        QString line = QString("- %1").arg(url->url());
+
+        // Add tags if available
+        if (!url->tags().isEmpty()) {
+            line += QString(" [%1]").arg(url->tags().join(", "));
+        }
+
+        // Add note if available
+        if (!url->note().isEmpty()) {
+            line += QString(" Note: %1").arg(url->note());
+        }
+
+        response += line + "\n";
+    }
+
+    // Get any pending urls
+    QList<QString> pendingUrls = m_pending_token_to_url.values(tokenString);
+
+    for (const auto& url : pendingUrls) {
+        QString line = QString("- (PENDING) %1").arg(url);
+
+        response += line + "\n";
+    }
+
+    // Clean up allocated URL objects
+    qDeleteAll(urls);
+
+    return response;
 }
 
 void AbstractServer::handleRequest(const QString &request, std::function<void(const QString &)> sendResponse) {
@@ -112,9 +150,9 @@ void AbstractServer::handleTagsFetched(const QString &urlString, const QStringLi
     // First find the correct token
     QtTokenWrapper *token;
 
-    if (!m_db->readToken(m_pending_storage[urlString], token)) {
+    if (!m_db->readToken(m_pending_url_to_token[urlString], token)) {
         // Bad token
-        m_pending_storage.remove(urlString);
+        m_pending_url_to_token.remove(urlString);
         return;
     }
 
@@ -130,5 +168,6 @@ void AbstractServer::handleTagsFetched(const QString &urlString, const QStringLi
     }
 
     // Remove the url and token from the pending pool
-    m_pending_storage.remove(urlString);
+    m_pending_url_to_token.remove(urlString);
+    m_pending_token_to_url.remove(token->tokenString(), urlString);
 }

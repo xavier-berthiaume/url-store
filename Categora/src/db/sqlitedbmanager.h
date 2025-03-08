@@ -30,6 +30,7 @@ public:
     bool readUrl(quint32 id, QtUrlWrapper *&url) override;
     bool readUrl(const QString &urlString, QtUrlWrapper *&url) override;
     bool readUrlFromToken(const QString &tokenString, QList<QtUrlWrapper *> &urlList) override;
+    bool readUrlFromToken(const QtTokenWrapper &token, QList<QtUrlWrapper *> &urlList) override;
     bool updateUrl(quint32 id, const QtUrlWrapper &url) override;
     bool deleteUrl(quint32 id) override;
 

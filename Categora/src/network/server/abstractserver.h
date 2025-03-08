@@ -13,10 +13,12 @@ class AbstractServer : public QObject
     AbstractDbManager *m_db;
     ApiManager *m_api;
 
-    QHash<QString, QString> m_pending_storage;
+    QHash<QString, QString> m_pending_url_to_token;
+    QMultiHash<QString, QString> m_pending_token_to_url;
 
     QString handleAuth();
     QString handlePost(const QString &tokenString, const QString &urlString);
+    // QString handleGet(const QString &tokenString, const QString &tagSearch);
     QString handleGet(const QString &tokenString);
 
 protected:

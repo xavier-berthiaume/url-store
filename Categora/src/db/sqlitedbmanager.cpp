@@ -131,7 +131,7 @@ bool SqliteDbManager::saveUrl(QtUrlWrapper &url)
         // Insert main URL data
         QSqlQuery query;
         query.prepare(
-            "INSERT INTO urls (url, note, createdDate) "
+            "INSERT OR IGNORE INTO urls (url, note, createdDate) "
             "VALUES (:url, :note, :date)"
             );
         query.bindValue(":url", url.url());
@@ -141,7 +141,25 @@ bool SqliteDbManager::saveUrl(QtUrlWrapper &url)
         if (!query.exec()) throw std::runtime_error("URL insert failed");
 
         // Get last inserted ID
-        const quint64 urlId = query.lastInsertId().toULongLong();
+        quint64 urlId;
+
+        // Check if we got a new ID or need to fetch existing
+        if (query.numRowsAffected() > 0) {
+            // New insertion - get auto-generated ID
+            urlId = query.lastInsertId().toULongLong();
+        } else {
+            // URL exists - fetch existing ID
+            QSqlQuery idQuery;
+            idQuery.prepare("SELECT id FROM urls WHERE url = :url");
+            idQuery.bindValue(":url", url.url());
+
+            if (!idQuery.exec() || !idQuery.next()) {
+                throw std::runtime_error("Failed to retrieve existing URL ID");
+            }
+
+            urlId = idQuery.value(0).toULongLong();
+        }
+
         url.setId(urlId);
 
         // Insert tags
@@ -252,13 +270,13 @@ bool SqliteDbManager::readUrl(const QString &urlString, QtUrlWrapper *&url)
     return true;
 }
 
-bool SqliteDbManager::readUrlFromToken(const QString &token, QList<QtUrlWrapper *> &urlList)
+bool SqliteDbManager::readUrlFromToken(const QString &tokenString, QList<QtUrlWrapper *> &urlList)
 {
     QSqlQuery query;
 
     // Step 1: Find the token_id for the given token
     query.prepare("SELECT id FROM tokens WHERE token = :token");
-    query.bindValue(":token", token);
+    query.bindValue(":token", tokenString);
 
     if (!query.exec()) {
         qWarning() << "Error finding token_id:" << query.lastError();
@@ -266,18 +284,26 @@ bool SqliteDbManager::readUrlFromToken(const QString &token, QList<QtUrlWrapper 
     }
 
     if (!query.next()) {
-        qWarning() << "No token found with value:" << token;
+        qWarning() << "No token found with value:" << tokenString;
         return false;
     }
 
     int tokenId = query.value(0).toInt(); // Get the token_id
+    QtTokenWrapper token;
+    token.setId(tokenId);
 
-    // Step 2: Find all url_ids associated with the token_id
+    return readUrlFromToken(token, urlList);
+}
+
+bool SqliteDbManager::readUrlFromToken(const QtTokenWrapper &token, QList<QtUrlWrapper *> &urlList)
+{
+    QSqlQuery query;
+
     query.prepare(
         "SELECT url_id FROM token_url "
         "WHERE token_id = :token_id"
         );
-    query.bindValue(":token_id", tokenId);
+    query.bindValue(":token_id", token.getId());
 
     if (!query.exec()) {
         qWarning() << "Error finding url_ids:" << query.lastError();
@@ -289,12 +315,14 @@ bool SqliteDbManager::readUrlFromToken(const QString &token, QList<QtUrlWrapper 
         urlIds.append(query.value(0).toInt()); // Collect all url_ids
     }
 
+    /*
+     * It's fine if there are no urls in the list
     if (urlIds.isEmpty()) {
         qWarning() << "No URLs found for token:" << token;
         return false;
     }
+    */
 
-    // Step 3: Retrieve URLs and their tags
     for (int urlId : urlIds) {
         QtUrlWrapper *urlWrapper;
 
