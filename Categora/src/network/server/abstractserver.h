@@ -18,8 +18,9 @@ class AbstractServer : public QObject
 
     QString handleAuth();
     QString handlePost(const QString &tokenString, const QString &urlString);
-    // QString handleGet(const QString &tokenString, const QString &tagSearch);
+    QString handleDelete(const QString &tokenString, const QString &urlString);
     QString handleGet(const QString &tokenString);
+    // QString handleGet(const QString &tokenString, const QString &tagSearch);
 
 protected:
     QString generateToken();

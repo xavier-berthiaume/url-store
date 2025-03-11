@@ -66,6 +66,34 @@ QString AbstractServer::handlePost(const QString &tokenString, const QString &ur
     return "OK: URL stored.\n";
 }
 
+QString AbstractServer::handleDelete(const QString &tokenString, const QString &urlString)
+{
+    QtTokenWrapper *readToken = nullptr;
+
+    // Token validation
+    if (!m_db->readToken(tokenString, readToken)) {
+        return "ERROR: Internal server error.\n";
+    }
+
+    if (readToken == nullptr) {
+        return "ERROR: Invalid token.\n";
+    }
+
+    QtUrlWrapper *readUrl = nullptr;
+
+    if (!m_db->readUrl(urlString, readUrl)) {
+        return "ERROR: Internal server error.\n";
+    }
+
+    if (readUrl == nullptr) {
+        return "ERROR: Invalid URL.\n";
+    }
+
+    m_db->removeUrlOwner(*readToken, *readUrl);
+
+    return "OK: URL removed.\n";
+}
+
 QString AbstractServer::handleGet(const QString &tokenString)
 {
     QList<QtUrlWrapper*> urls;
@@ -131,6 +159,12 @@ void AbstractServer::handleRequest(const QString &request, std::function<void(co
             response = "ERROR: Invalid token or request format.\n";
         } else {
             response = handlePost(parts[1], parts[2]);
+        }
+    } else if (method == "DELETE") {
+        if (parts.size() < 3 || !isValidToken(parts[1])) {
+            response = "ERROR: Invalid token or request format.\n";
+        } else {
+            response = handleDelete(parts[1], parts[2]);
         }
     } else if (method == "GET") {
         if (parts.size() < 2 || !isValidToken(parts[1])) {
