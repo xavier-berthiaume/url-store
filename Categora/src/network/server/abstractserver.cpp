@@ -102,11 +102,14 @@ QString AbstractServer::handleGet(const QString &tokenString)
         return "ERROR: Invalid token or request format.\n";
     }
 
-    if (urls.isEmpty()) {
+    // Get any pending urls
+    QList<QString> pendingUrls = m_pending_token_to_url.values(tokenString);
+
+    if (urls.isEmpty() && pendingUrls.isEmpty()) {
         return "OK: No URLs found.\n";
     }
 
-    QString response = QString("OK: Found %1 URLs\n").arg(urls.size());
+    QString response = QString("OK: Found %1 URLs\n").arg(urls.size() + pendingUrls.size());
 
     // Get all urls
     for (const auto& url : urls) {
@@ -125,9 +128,6 @@ QString AbstractServer::handleGet(const QString &tokenString)
 
         response += line + "\n";
     }
-
-    // Get any pending urls
-    QList<QString> pendingUrls = m_pending_token_to_url.values(tokenString);
 
     for (const auto& url : pendingUrls) {
         QString line = QString("- (PENDING) %1").arg(url);
