@@ -1,0 +1,56 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+.search-section {
+    margin-bottom: 20px;
+}
+
+.search-bar {
+    padding: 10px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.button-base {
+    padding: 10px 20px;
+    border: none;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.search-button {
+}
+
+.button-section {
+    margin: 0px;
+    padding: 20px;
+}
+
+.save-button {
+}
+
+.refresh-button {
+
+}
+
+.list-section {
+    text-align: left;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.list-item {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
