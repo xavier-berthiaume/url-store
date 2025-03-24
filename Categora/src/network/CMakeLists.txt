@@ -4,6 +4,7 @@ set(NETWORK_SOURCES
     
     "server/tcpserver.cpp"
     "server/abstractserver.cpp"
+    "server/httpserver.cpp"
 )
 
 set(NETWORK_HEADERS
@@ -12,6 +13,7 @@ set(NETWORK_HEADERS
 
     "server/tcpserver.h"
     "server/abstractserver.h"
+    "server/httpserver.h"
 )
 
 target_sources(BusinessLogic PRIVATE
