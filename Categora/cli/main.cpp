@@ -2,7 +2,7 @@
 
 #include "../../src/db/sqlitedbmanager.h"
 #include "../../src/network/api/deepseek/deepseekapimanager.h"
-#include "../../src/network/server/tcpserver.h"
+#include "../../src/network/server/httpserver.h"
 #include "envloader.h"
 
 int main(int argc, char *argv[])
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     DeepSeekApiManager api_manager;
     api_manager.setApiKey(env["DEEPSEEK_API_KEY"]);
 
-    TcpServer server(&db_manager, &api_manager);
+    HttpServer server(&db_manager, &api_manager);
     server.startServer(12345);
 
     return app.exec();
