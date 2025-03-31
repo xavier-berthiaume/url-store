@@ -15,14 +15,13 @@ class AbstractServer : public QObject
 
     QHash<QString, QString> m_pending_url_to_token;
     QMultiHash<QString, QString> m_pending_token_to_url;
-
+protected:
     QString handleAuth();
     QString handlePost(const QString &tokenString, const QString &urlString);
     QString handleDelete(const QString &tokenString, const QString &urlString);
     QString handleGet(const QString &tokenString);
     // QString handleGet(const QString &tokenString, const QString &tagSearch);
 
-protected:
     QString generateToken();
     bool isValidToken(const QString &token);
     void handleRequest(const QString &request, std::function<void(const QString &)> sendResponse);
