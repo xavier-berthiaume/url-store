@@ -5,6 +5,11 @@
 
     "description": "Save URL's to have them tagged with keywords, making them easier to search for at a later time!",
 
+    "content_scripts": [{
+        "js": ["popup.js"],
+        "matches": ["<all_urls>"]
+    }],
+
     "background": {
         "scripts": ["background.js"]
     },

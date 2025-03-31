@@ -23,10 +23,14 @@
     </div>
 
     <div class="button-section">
+        <button id="authButton" class="button-base auth-button">Auth</button>
         <button id="saveUrlButton" class="button-base save-button">Save URL</button>
+        <button id="deleteUrlButton" class="button-base delete-button">Delete URL</button>
         <button id="getUrlsButton" class="button-base refresh-button">Refresh Saved URL's</button>
     </div>
 
-    <script src="popup.js"></script>
+    <div id="statusMessage" class="status-message"></div>
+
+    <script src="popup.js" type="module"></script>
 </body>
 </html>

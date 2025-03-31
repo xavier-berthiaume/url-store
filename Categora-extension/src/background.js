@@ -1,39 +1,49 @@
-import { API_BASE_URL, MAX_RETRIES, DEBUG_MODE } from "./config.js";
+// import { API_BASE_URL, MAX_RETRIES, DEBUG_MODE } from "./config.js"; you can't use a config.js in a browser extension
+console.log("Background script initialized");
 
-const browser = chrome || browser;
+browser.runtime.onInstalled.addListener(() => {
+  browser.storage.local.set({
+    DEBUG_MODE: true,
+    API_URL: "http://localhost:12345",
+    MAX_RETRIES: 3
+  });
+});
 
 async function getToken() {
+    const { DEBUG_MODE } = await browser.storage.local.get(["DEBUG_MODE"]);
     if (DEBUG_MODE) {
         console.log("getToken() called");
     }
 
-    const result = await browser.storage.local.get(["userToken"]);
-
-    if (result.userToken) {
-        console.log("Token found locally:", result.userToken);
-        return result.userToken;
+    try {
+        // 2. Get local token
+        const { userToken } = await browser.storage.local.get(["userToken"]);
+        if (userToken) {
+            console.log("Token found locally:", userToken);
+            return userToken;
+        }
+    } catch (error) {
+        console.log("No token found locally. Fetching from server...");
     }
 
-    console.log("No token found locally. Fetching from Categora server...");
-
+    // 3. Get API_URL with a fallback
+    const { API_URL } = await browser.storage.local.get(["API_URL"]);
+    const apiUrl = API_URL || "http://localhost:12345"; // Fallback URL
+    
     try {
-        const response = await fetch(`${API_BASE_URL}/auth`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
+        // 4. Use the validated API URL
+        const response = await fetch(`${apiUrl}/auth`, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain" },
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const token = data.token;
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const data = await response.text();
+        const token = data.split(" ")[1];
 
         await browser.storage.local.set({ userToken: token });
         console.log("Token saved locally:", token);
-
         return token;
     } catch (error) {
         console.error("Failed to fetch token:", error);
@@ -42,6 +52,7 @@ async function getToken() {
 }
 
 async function getUrls() {
+    const { DEBUG_MODE } = await browser.storage.local.get(["DEBUG_MODE"]);
     if (DEBUG_MODE) {
         console.log("getUrls() called");
     }
@@ -59,9 +70,12 @@ async function getUrls() {
         console.log("URL's found locally:", result.urls);
         return result.urls;
     }
+    
+    const { API_URL } = await browser.storage.local.get(["API_URL"]);
+    const apiUrl = API_URL || "http://localhost:12345"; // Fallback URL
 
     try {
-        const response = await fetch(`${API_BASE_URL}/url`, {
+        const response = await fetch(`${apiUrl}/url`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -87,6 +101,7 @@ async function getUrls() {
 }
 
 async function saveUrl(urlString) {
+    const { DEBUG_MODE } = await browser.storage.local.get(["DEBUG_MODE"]);
     if (DEBUG_MODE) {
         console.log("saveUrl() called");
     }
@@ -97,15 +112,17 @@ async function saveUrl(urlString) {
     if (!token) {
         throw new Error("No token found. Please authenticate first.");
     }
+    
+    const { API_URL } = await browser.storage.local.get(["API_URL"]);
+    const apiUrl = API_URL || "http://localhost:12345"; // Fallback URL
 
     try {
-        const response = await fetch(`${API_BASE_URL}/url`, {
+        const response = await fetch(`${apiUrl}/url?${urlString}`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ url: urlString })
+            }
         });
 
         if (!response.ok) {
@@ -119,21 +136,69 @@ async function saveUrl(urlString) {
     }
 }
 
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "getToken") {
-        getToken()
-            .then((token) => sendResponse({ success: true, token }))
-            .catch((error) => sendResponse({ success: false, error: error.message }));
-    } else if (request.action === "getUrls") {
-        getUrls()
-            .then((urls) => sendResponse({ success: true, urls }))
-            .catch((error) => sendResponse({ success: false, error: error.message }));
-    } else if (request.action === "saveUrl" && request.url) {
-        saveUrl(request.url)
-            .then(() => sendResponse({ success: true }))
-            .catch((error) => sendResponse({ success: false, error: error.message }));
+async function deleteUrl(urlString) {
+    const { DEBUG_MODE } = await browser.storage.local.get(["DEBUG_MODE"]);
+    if (DEBUG_MODE) {
+        console.log("deleteUrl() called");
     }
 
-    // Return true to indicate that sendResponse will be called asynchronously
-    return true;
+    const tokenResult = await browser.storage.local.get(["userToken"]);
+    const token = tokenResult.userToken;
+
+    if (!token) {
+        throw new Error("No token found. Please authenticate first.");
+    }
+    
+    const { API_URL } = await browser.storage.local.get(["API_URL"]);
+    const apiUrl = API_URL || "http://localhost:12345"; // Fallback URL
+
+    try {
+        const response = await fetch(`${apiUrl}/url?${urlString}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error. Status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error("Failed to delete URL:", error);
+        throw error;
+    }
+}
+
+browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log("Received message:", request.action);
+    (async () => {
+        try {
+            switch (request.action) {
+                case "getToken":
+                    const token = await getToken();
+                    sendResponse({ success: true, token });
+                    break;
+                case "getUrls":
+                    const urls = await getUrls();
+                    sendResponse({ success: true, urls });
+                    break;
+                case "saveUrl":
+                    await saveUrl(request.url);
+                    sendResponse({ success: true });
+                    break;
+                case "deleteUrl":
+                    await deleteUrl(request.url);
+                    sendResponse({ success: true });
+                    break;
+                default:
+                    sendResponse({ success: false, error: "Unknown action" });
+            }
+        } catch (error) {
+            console.log("Error encountered before sending response:", error);
+            sendResponse({ success: false, error: error.message });
+        }
+    })();
+
+    return true; // Keep the message port open for async response
 });
