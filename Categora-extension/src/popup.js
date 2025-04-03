@@ -67,7 +67,7 @@ async function saveUrl() {
         if (response.success) {
             console.log("URL saved successfully:", url);
             showStatus("URL saved successfully: " + response.url);
-            fetchUrls();
+            // Add the url to the local url list
         } else {
             console.error("Failed to save URL:", response.error);
             showStatus("Failed to save URL: " + response.error, true);
@@ -97,6 +97,7 @@ async function deleteUrl() {
         if (response.success) {
             console.log("URL deleted successfully!");
             showStatus("URL deleted successfully: " + response.url);
+            // Remove the url from the local url list
         } else {
             console.error("Failed to delete URL:", response.error);
             showStatus("Failed to delete URL: " + response.error, true);

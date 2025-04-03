@@ -89,6 +89,7 @@ QHttpServerResponse HttpServer::addCorsHeaders(QHttpServerResponse &&response)
 void HttpServer::setupRoutes()
 {
     setupAuthRoute();
+    setupUrlPreflight();
     setupUrlPostRoute();
     setupUrlDeleteRoute();
     setupUrlGetRoute();
@@ -98,7 +99,15 @@ void HttpServer::setupAuthRoute()
 {
     server->route("/auth", QHttpServerRequest::Method::Post, [this]() {
         QHttpServerResponse response = QHttpServerResponse(this->handleAuth(), QHttpServerResponse::StatusCode::Ok);
-        return addCorsHeaders(std::move(response));
+        response = addCorsHeaders(std::move(response));
+        return response;
+    });
+}
+
+void HttpServer::setupUrlPreflight()
+{
+    server->route("/url", QHttpServerRequest::Method::Options, [this](const QHttpServerRequest &request) {
+        return addCorsHeaders(QHttpServerResponse("", QHttpServerResponse::StatusCode::NoContent));
     });
 }
 
@@ -117,7 +126,8 @@ void HttpServer::setupUrlPostRoute()
             return QHttpServerResponse(QString("Missing 'url' query parameter"), QHttpServerResponse::StatusCode::ExpectationFailed);
         }
 
-        return QHttpServerResponse(this->handlePost(token, url), QHttpServerResponse::StatusCode::Accepted);
+        QHttpServerResponse response = addCorsHeaders(QHttpServerResponse(this->handlePost(token, url), QHttpServerResponse::StatusCode::Accepted));
+        return response;
     });
 }
 
@@ -136,7 +146,8 @@ void HttpServer::setupUrlDeleteRoute()
             return QHttpServerResponse(QString("Missing 'url' query parameter"), QHttpServerResponse::StatusCode::ExpectationFailed);
         }
 
-        return QHttpServerResponse(this->handleDelete(token, url), QHttpServerResponse::StatusCode::Ok);
+        QHttpServerResponse response = addCorsHeaders(QHttpServerResponse(this->handleDelete(token, url), QHttpServerResponse::StatusCode::Ok));
+        return response;
     });
 }
 
@@ -149,6 +160,10 @@ void HttpServer::setupUrlGetRoute()
             return QHttpServerResponse(QHttpServerResponse::StatusCode::Forbidden);
         }
 
-        return QHttpServerResponse(this->handleGet(token), QHttpServerResponse::StatusCode::Ok);
+        QHttpServerResponse response = addCorsHeaders(QHttpServerResponse(QHttpServerResponse::StatusCode::Ok));
+        response.headers().append("Content-Type", "application/json");
+
+        const QString data = this->handleGet(token);
+        return response;
     });
 }

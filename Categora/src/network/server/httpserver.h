@@ -20,6 +20,7 @@ class HttpServer : public AbstractServer
 
     void setupRoutes();
     void setupAuthRoute();
+    void setupUrlPreflight();
     void setupUrlPostRoute();
     void setupUrlDeleteRoute();
     void setupUrlGetRoute();

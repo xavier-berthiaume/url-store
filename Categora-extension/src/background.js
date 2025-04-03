@@ -16,7 +16,6 @@ async function getToken() {
     }
 
     try {
-        // 2. Get local token
         const { userToken } = await browser.storage.local.get(["userToken"]);
         if (userToken) {
             console.log("Token found locally:", userToken);
@@ -26,12 +25,10 @@ async function getToken() {
         console.log("No token found locally. Fetching from server...");
     }
 
-    // 3. Get API_URL with a fallback
     const { API_URL } = await browser.storage.local.get(["API_URL"]);
     const apiUrl = API_URL || "http://localhost:12345"; // Fallback URL
     
     try {
-        // 4. Use the validated API URL
         const response = await fetch(`${apiUrl}/auth`, {
             method: "POST",
             headers: { "Content-Type": "text/plain" },
@@ -117,11 +114,11 @@ async function saveUrl(urlString) {
     const apiUrl = API_URL || "http://localhost:12345"; // Fallback URL
 
     try {
-        const response = await fetch(`${apiUrl}/url?${urlString}`, {
+        const response = await fetch(`${apiUrl}/url?url=${urlString}`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
+                "Content-Type": "text/plain",
             }
         });
 
@@ -153,11 +150,11 @@ async function deleteUrl(urlString) {
     const apiUrl = API_URL || "http://localhost:12345"; // Fallback URL
 
     try {
-        const response = await fetch(`${apiUrl}/url?${urlString}`, {
+        const response = await fetch(`${apiUrl}/url?url=${urlString}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json",
+                "Content-Type": "text/plain",
             }
         });
 
