@@ -2,6 +2,8 @@
 #define ABSTRACTSERVER_H
 
 #include <QObject>
+#include <QList>
+#include <QPair>
 
 #include "db/abstractdbmanager.h"
 #include "api/apimanager.h"
@@ -19,6 +21,7 @@ protected:
     QString handleAuth();
     QString handlePost(const QString &tokenString, const QString &urlString);
     QString handleDelete(const QString &tokenString, const QString &urlString);
+    QString handleGet(const QString &tokenString, QList<const QtUrlWrapper *> &list);
     QString handleGet(const QString &tokenString);
     // QString handleGet(const QString &tokenString, const QString &tagSearch);
 

@@ -66,7 +66,7 @@ async function saveUrl() {
 
         if (response.success) {
             console.log("URL saved successfully:", url);
-            showStatus("URL saved successfully: " + response.url);
+            showStatus("URL saved successfully");
             // Add the url to the local url list
         } else {
             console.error("Failed to save URL:", response.error);
@@ -95,8 +95,8 @@ async function deleteUrl() {
         const response = await browser.runtime.sendMessage({ action: "deleteUrl", url});
 
         if (response.success) {
-            console.log("URL deleted successfully!");
-            showStatus("URL deleted successfully: " + response.url);
+            console.log("URL deleted successfully");
+            showStatus("URL deleted successfully");
             // Remove the url from the local url list
         } else {
             console.error("Failed to delete URL:", response.error);

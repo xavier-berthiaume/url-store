@@ -127,6 +127,7 @@ async function saveUrl(urlString) {
         }
         
         console.log("URL saved successfully.");
+        return response;
     } catch (error) {
         console.error("Failed to save URL:", error);
         throw error;

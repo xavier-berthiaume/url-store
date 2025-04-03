@@ -94,6 +94,38 @@ QString AbstractServer::handleDelete(const QString &tokenString, const QString &
     return "OK: URL removed.\n";
 }
 
+QString AbstractServer::handleGet(const QString &tokenString, QList<const QtUrlWrapper *> &list)
+{
+    QList<QtUrlWrapper*> urls;
+
+    if (!m_db->readUrlFromToken(tokenString, urls)) {
+        return "ERROR: Invalid token or request format.\n";
+    }
+
+    for (const QtUrlWrapper *url : urls) {
+        list.append(url);
+    }
+
+    // Get any pending urls
+    QList<QString> pendingUrls = m_pending_token_to_url.values(tokenString);
+
+    for (const QtUrlWrapper *url : urls) {
+        list.append(url);
+    }
+
+    if (urls.isEmpty() && pendingUrls.isEmpty()) {
+        return "OK: No URLs found.\n";
+    }
+
+    return QString("OK: Found %1 URLs\n").arg(urls.size() + pendingUrls.size());;
+}
+
+/**
+ * @deprecated
+ * @brief AbstractServer::handleGet
+ * @param tokenString
+ * @return
+ */
 QString AbstractServer::handleGet(const QString &tokenString)
 {
     QList<QtUrlWrapper*> urls;

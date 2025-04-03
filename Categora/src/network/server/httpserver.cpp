@@ -126,7 +126,7 @@ void HttpServer::setupUrlPostRoute()
             return QHttpServerResponse(QString("Missing 'url' query parameter"), QHttpServerResponse::StatusCode::ExpectationFailed);
         }
 
-        QHttpServerResponse response = addCorsHeaders(QHttpServerResponse(this->handlePost(token, url), QHttpServerResponse::StatusCode::Accepted));
+        QHttpServerResponse response = addCorsHeaders(QHttpServerResponse(this->handlePost(token, url), QHttpServerResponse::StatusCode::Ok));
         return response;
     });
 }
@@ -163,7 +163,7 @@ void HttpServer::setupUrlGetRoute()
         QHttpServerResponse response = addCorsHeaders(QHttpServerResponse(QHttpServerResponse::StatusCode::Ok));
         response.headers().append("Content-Type", "application/json");
 
-        const QString data = this->handleGet(token);
+        // const QString data = this->handleGet(token);
         return response;
     });
 }
