@@ -1,6 +1,9 @@
 #include "httpserver.h"
 
 #include <QDebug>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <utility>
 
 HttpServer::HttpServer(AbstractDbManager *m_db, ApiManager *m_api, QObject *parent)
@@ -160,7 +163,34 @@ void HttpServer::setupUrlGetRoute()
             return QHttpServerResponse(QHttpServerResponse::StatusCode::Forbidden);
         }
 
-        QHttpServerResponse response = addCorsHeaders(QHttpServerResponse(QHttpServerResponse::StatusCode::Ok));
+        QList<const QtUrlWrapper *> url_list;
+        QString message = this->handleGet(token, url_list);
+
+        QJsonObject jsonResponse;
+        jsonResponse["message"] = message;
+
+        QJsonArray urlsArray;
+        for (const QtUrlWrapper *url : url_list) {
+            QJsonObject urlObj;
+            urlObj["url"] = url->url();
+
+            QJsonArray tagsArray;
+            for (const QString &tag : url->tags()) {
+                tagsArray.append(tag);
+            }
+            urlObj["tags"] = tagsArray;
+            urlObj["pending"] = url->tags().isEmpty();
+
+            urlsArray.append(urlObj);
+        }
+
+        jsonResponse["urls"] = urlsArray;
+
+        // Convert QJsonObject to QByteArray (JSON format)
+        QJsonDocument jsonDoc(jsonResponse);
+        QByteArray jsonData = jsonDoc.toJson();
+
+        QHttpServerResponse response = addCorsHeaders(QHttpServerResponse(jsonData, QHttpServerResponse::StatusCode::Ok));
         response.headers().append("Content-Type", "application/json");
 
         // const QString data = this->handleGet(token);
