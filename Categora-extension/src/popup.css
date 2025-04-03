@@ -44,17 +44,23 @@ h1 {
 
 }
 
-.list-section {
-    text-align: left;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
 .list-item {
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
 }
 
+.url {
+    font-weight: 500;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tags {
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 4px;
+}
 .status-message {
     padding: 5px;
     margin: 5px 0;

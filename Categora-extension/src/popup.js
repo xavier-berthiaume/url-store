@@ -2,8 +2,10 @@
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         await fetchToken();
+        await refreshUrlListDisplay(); // Show cached data immediately
+        await fetchUrls(); // Refresh with latest data
     } catch (error) {
-        console.error("Initial token fetch failed:", error);
+        console.error("Initial setup failed:", error);
     }
 });
 
@@ -12,6 +14,26 @@ function showStatus(message, isError = false) {
     statusEl.textContent = message;
     statusEl.className = `status-message visible ${isError ? 'error' : 'success'}`;
     setTimeout(() => statusEl.classList.remove('visible'), 3000);
+}
+
+async function refreshUrlListDisplay() {
+    const result = await browser.storage.local.get('local_urls');
+    const localUrls = result.local_urls || [];
+    const listSection = document.querySelector('.list-section');
+    
+    // Clear existing items
+    listSection.innerHTML = '';
+    
+    // Create new items
+    localUrls.forEach(urlEntry => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'list-item';
+        itemDiv.innerHTML = `
+            <div class="url">${urlEntry.url}</div>
+            <div class="tags">${urlEntry.tags.join(', ')}</div>
+        `;
+        listSection.appendChild(itemDiv);
+    });
 }
 
 async function fetchToken() {
@@ -36,11 +58,14 @@ async function fetchToken() {
 }
 
 async function fetchUrls() {
-    const response = await browser.runtime.sendMessage({ action: "getUrls"});
+    const response = await browser.runtime.sendMessage({ action: "refreshUrls"});
 
     if (response.success) {
-        console.log("URLs retrieved:", response.urls);
-        showStatus("URLs retrieved: " + response.urls);
+        console.log("URLs retrieved");
+        showStatus("URLs retrieved");
+        // Set the local urls to what's been retrieved
+        // local = fetched_urls
+        browser.storage.local.set({ local_urls: response.fetched_urls });
     } else {
         console.error("Failed to retrieve URLs:", response.error);
         showStatus("Failed to retrieve URLs: " + response.error, true);

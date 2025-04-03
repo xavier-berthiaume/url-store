@@ -54,13 +54,6 @@ async function getUrls() {
         console.log("getUrls() called");
     }
 
-    const tokenResult = await browser.storage.local.get(["userToken"]);
-    const token = tokenResult.userToken;
-
-    if (!token) {
-        throw new Error("No token found. Please authenticate first.");
-    }
-
     const result = await browser.storage.local.get(["urls"]);
 
     if (result.urls) {
@@ -68,6 +61,17 @@ async function getUrls() {
         return result.urls;
     }
     
+    return refreshUrls();
+}
+
+async function refreshUrls() {
+    const tokenResult = await browser.storage.local.get(["userToken"]);
+    const token = tokenResult.userToken;
+
+    if (!token) {
+        throw new Error("No token found. Please authenticate first.");
+    }
+
     const { API_URL } = await browser.storage.local.get(["API_URL"]);
     const apiUrl = API_URL || "http://localhost:12345"; // Fallback URL
 
@@ -83,14 +87,13 @@ async function getUrls() {
         if (!response.ok) {
             throw new Error(`HTTP error. Status: ${response.status}`);
         }
-
         
         const data = await response.json();
         console.log("URLs fetched from API:", data);
 
         await browser.storage.local.set({ urls: data });
 
-        return data;
+        return data.urls;
     } catch (error) {
         console.error("Failed to fetch URL's:", error);
         throw error;
@@ -180,6 +183,10 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 case "getUrls":
                     const urls = await getUrls();
                     sendResponse({ success: true, urls });
+                    break;
+                case "refreshUrls":
+                    const fetched_urls = await refreshUrls();
+                    sendResponse({ success: true, fetched_urls });
                     break;
                 case "saveUrl":
                     await saveUrl(request.url);

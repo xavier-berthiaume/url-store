@@ -108,16 +108,20 @@ QString AbstractServer::handleGet(const QString &tokenString, QList<const QtUrlW
 
     // Get any pending urls
     QList<QString> pendingUrls = m_pending_token_to_url.values(tokenString);
+    quint32 pendingCount = 0;
 
     for (const QtUrlWrapper *url : urls) {
-        list.append(url);
+        if (url->tags().isEmpty()) { // We make sure that we only add urls that don't yet have tags
+            list.append(url);
+            pendingCount++;
+        }
     }
 
-    if (urls.isEmpty() && pendingUrls.isEmpty()) {
+    if (urls.isEmpty() && pendingCount == 0) {
         return "OK: No URLs found.\n";
     }
 
-    return QString("OK: Found %1 URLs\n").arg(urls.size() + pendingUrls.size());;
+    return QString("OK: Found %1 URLs\n").arg(urls.size() + pendingCount);
 }
 
 /**
